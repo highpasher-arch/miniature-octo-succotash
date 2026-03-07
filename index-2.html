@@ -756,6 +756,49 @@ function renderDash(){
 // ══════════════════════════════════════════
 //  CUSTOMERS
 // ══════════════════════════════════════════
+function quickSMS(id){
+  const cu=customers.find(x=>x.id===id); if(!cu)return;
+  const cBills=bills.filter(b=>b.customerId===id);
+  const totalDue=cBills.reduce((s,b)=>s+b.due,0);
+  const co=company||{};
+  const html=`<div class="sheet-inner">
+    <div class="sheet-title">📱 SMS পাঠান — ${cu.name}</div>
+    <div style="display:grid;gap:10px">
+      ${totalDue>0?`<button class="btn" style="padding:13px;text-align:left;background:rgba(251,146,60,0.1);border:1px solid rgba(251,146,60,0.3);color:#fdba74" onclick="sendQuickMsg(${id},'due')">
+        ⚠️ বকেয়া বিলের SMS<br><span style="font-size:11px;color:#94a3b8;font-weight:400">বকেয়া: ৳${fmt(totalDue)}</span>
+      </button>`:''}
+      <button class="btn" style="padding:13px;text-align:left;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);color:#6ee7b7" onclick="sendQuickMsg(${id},'welcome')">
+        🎉 স্বাগত বার্তা
+      </button>
+      <button class="btn" style="padding:13px;text-align:left;background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.3);color:#a5b4fc" onclick="sendQuickMsg(${id},'reconnect')">
+        ✅ সংযোগ চালু SMS
+      </button>
+      <button class="btn" style="padding:13px;text-align:left;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#fca5a5" onclick="sendQuickMsg(${id},'disconnect')">
+        🔴 সংযোগ বিচ্ছিন্ন SMS
+      </button>
+      <button class="btn btn-ghost" onclick="closeSheet()">বাতিল</button>
+    </div>
+  </div>`;
+  showSheet(html);
+}
+
+function sendQuickMsg(id,type){
+  const cu=customers.find(x=>x.id===id); if(!cu)return;
+  const co=company||{};
+  const cBills=bills.filter(b=>b.customerId===id);
+  const totalDue=cBills.reduce((s,b)=>s+b.due,0);
+  let msg='';
+  if(type==='due') msg=`সম্মানিত ${cu.name}, আপনার মোট বকেয়া বিল ৳${fmt(totalDue)} টাকা। দ্রুত পরিশোধ করুন। - ${co.name||'NetBill'} (${co.phone||''})`;
+  else if(type==='welcome') msg=`সম্মানিত ${cu.name}, আপনাকে স্বাগতম! 🎉 আমাদের সেবা গ্রহণের জন্য ধন্যবাদ। - ${co.name||'NetBill'} (${co.phone||''})`;
+  else if(type==='reconnect') msg=`সম্মানিত ${cu.name}, আপনার সংযোগটি পুনরায় চালু করা হয়েছে ✅। - ${co.name||'NetBill'} (${co.phone||''})`;
+  else if(type==='disconnect') msg=`সম্মানিত ${cu.name}, আপনার সংযোগটি বকেয়ার কারণে বন্ধ করা হয়েছে 🔴। - ${co.name||'NetBill'} (${co.phone||''})`;
+  
+  const log={id:Date.now(),type,phone:cu.phone,name:cu.name,from:'manual',fromName:'',msg,time:new Date().toISOString()};
+  smsLog.unshift(log);
+  sv('nb2_s',JSON.stringify(smsLog));
+  closeSheet();
+  showSMSSuccess(log);
+}
 function renderCustomers(){
   const active=customers.filter(c=>c.status==='active').length;
   const sorted=[...customers].sort((a,b)=>(b.due||0)-(a.due||0));
@@ -818,6 +861,7 @@ function customerFolderCard(c){
     <!-- অ্যাকশন বাটন -->
     <div style="display:flex;gap:8px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.04);flex-wrap:wrap">
       <a href="tel:${c.phone}" style="flex:1;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.22);color:#22c55e;border-radius:10px;padding:9px;font-size:13px;font-weight:700;text-align:center;text-decoration:none;font-family:inherit">📞 কল</a>
+      <button onclick="event.stopPropagation();quickSMS(${c.id})" style="flex:1;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);color:#6ee7b7;border-radius:10px;padding:9px;cursor:pointer;font-size:13px;font-weight:700;font-family:inherit">📱 SMS</button>
       <button onclick="openEdit(${c.id})" style="flex:1;background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2);color:#818cf8;border-radius:10px;padding:9px;cursor:pointer;font-size:13px;font-weight:700;font-family:inherit">✏️ এডিট</button>
       <button onclick="toggleConnection(${c.id})" style="flex:1;background:${isActive?'rgba(239,68,68,0.1)':'rgba(34,197,94,0.1)'};border:1px solid ${isActive?'rgba(239,68,68,0.22)':'rgba(34,197,94,0.22)'};color:${isActive?'#f87171':'#22c55e'};border-radius:10px;padding:9px;cursor:pointer;font-size:13px;font-weight:700;font-family:inherit">${isActive?'🔴 বন্ধ':'🟢 চালু'}</button>
       ${unpaid.length>0?`<button onclick="openPayModal(${unpaid[0].id})" style="flex:1;background:linear-gradient(135deg,#166534,#16a34a);border:none;color:#fff;border-radius:10px;padding:9px;cursor:pointer;font-size:13px;font-weight:800;font-family:inherit">💳 পে</button>`:''}
@@ -991,6 +1035,7 @@ function openBillHistory(id){
           <div style="font-size:12px;color:#a78bfa;margin-top:2px">📦 ${p.name}</div>
           <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
             <a href="tel:${c.phone}" style="background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.25);color:#22c55e;border-radius:8px;padding:5px 12px;font-size:12px;font-weight:700;text-decoration:none">📞 কল</a>
+            <button onclick="quickSMS(${c.id})" style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);color:#6ee7b7;border-radius:8px;padding:5px 12px;cursor:pointer;font-size:12px;font-weight:700;font-family:inherit">📱 SMS</button>
             <button onclick="openEdit(${c.id})" style="background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2);color:#818cf8;border-radius:8px;padding:5px 12px;cursor:pointer;font-size:12px;font-weight:700;font-family:inherit">✏️ এডিট</button>
             <span style="background:${isActive?'rgba(34,197,94,0.1)':'rgba(239,68,68,0.1)'};border:1px solid ${isActive?'rgba(34,197,94,0.25)':'rgba(239,68,68,0.25)'};color:${isActive?'#22c55e':'#f87171'};border-radius:8px;padding:5px 10px;font-size:11px;font-weight:800">${isActive?'🟢 চালু':'🔴 বন্ধ'}</span>
           </div>
@@ -2171,6 +2216,29 @@ function whatsappBackup(){
   sv('nb2_lastbackup',ts);
   toast('✅ ফাইল ডাউনলোড হয়েছে! WhatsApp এ পাঠান');
 }
+function googleDriveRestore(){
+  // Show modal with instructions
+  const html=`<div class="sheet-inner">
+    <div class="sheet-title">📂 Google Drive থেকে রিস্টোর</div>
+    <div style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);border-radius:13px;padding:14px;margin-bottom:16px">
+      <div style="font-size:13px;color:#94a3b8;line-height:2">
+        <div style="margin-bottom:8px"><strong style="color:#e2e8f0">ধাপ ১:</strong> নিচের বাটনে চাপুন → Google Drive খুলবে</div>
+        <div style="margin-bottom:8px"><strong style="color:#e2e8f0">ধাপ ২:</strong> <strong style="color:#818cf8">NetBill_</strong> দিয়ে শুরু ফাইলটা খুঁজুন</div>
+        <div style="margin-bottom:8px"><strong style="color:#e2e8f0">ধাপ ৩:</strong> ফাইলটা ডাউনলোড করুন</div>
+        <div><strong style="color:#e2e8f0">ধাপ ৪:</strong> নিচে "রিস্টোর করুন" বাটন চাপুন</div>
+      </div>
+    </div>
+    <button class="btn" style="width:100%;padding:13px;font-size:14px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);margin-bottom:10px" onclick="window.open('https://drive.google.com/drive/search?q=NetBill','_blank')">
+      📂 Google Drive খুলুন
+    </button>
+    <button class="btn" style="width:100%;padding:13px;font-size:14px;background:linear-gradient(135deg,#7c3aed,#a78bfa)" onclick="closeSheet();restoreFromFile()">
+      ⬆️ রিস্টোর করুন
+    </button>
+    <button class="btn btn-ghost" style="width:100%;margin-top:8px" onclick="closeSheet()">বাতিল</button>
+  </div>`;
+  openSheet(html);
+}
+
 function googleDriveBackup(){
   const data={customers,bills,smsLog,company,backupTime:new Date().toISOString()};
   const json=JSON.stringify(data);
@@ -2379,6 +2447,9 @@ function renderGDriveSettings(){
       <button class="btn" style="width:100%;padding:13px;font-size:14px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px" onclick="googleDriveBackup()">
         <span style="font-size:20px">📂</span> Google Drive এ সেভ করুন
       </button>
+      <button class="btn" style="width:100%;padding:13px;font-size:14px;background:linear-gradient(135deg,#7c3aed,#a78bfa);display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px" onclick="googleDriveRestore()">
+        <span style="font-size:20px">📥</span> Google Drive থেকে রিস্টোর
+      </button>
       <button class="btn btn-ghost" style="font-size:12px;padding:10px" onclick="disconnectGas()">🔌 সংযোগ বিচ্ছিন্ন করুন</button>
     </div>`;
   }
@@ -2425,8 +2496,11 @@ function renderGDriveSettings(){
     <button class="btn" style="width:100%;padding:13px;font-size:14px;background:linear-gradient(135deg,#15803d,#22c55e);display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px" onclick="whatsappBackup()">
       <span style="font-size:20px">💚</span> WhatsApp এ ব্যাকআপ পাঠান
     </button>
-    <button class="btn" style="width:100%;padding:13px;font-size:14px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);display:flex;align-items:center;justify-content:center;gap:8px" onclick="googleDriveBackup()">
+    <button class="btn" style="width:100%;padding:13px;font-size:14px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px" onclick="googleDriveBackup()">
       <span style="font-size:20px">📂</span> Google Drive এ সেভ করুন
+    </button>
+    <button class="btn" style="width:100%;padding:13px;font-size:14px;background:linear-gradient(135deg,#7c3aed,#a78bfa);display:flex;align-items:center;justify-content:center;gap:8px" onclick="googleDriveRestore()">
+      <span style="font-size:20px">📥</span> Google Drive থেকে রিস্টোর
     </button>
   </div>`;
 }
