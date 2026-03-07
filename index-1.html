@@ -2171,6 +2171,49 @@ function whatsappBackup(){
   sv('nb2_lastbackup',ts);
   toast('✅ ফাইল ডাউনলোড হয়েছে! WhatsApp এ পাঠান');
 }
+function googleDriveRestore(){
+  // Show modal with instructions
+  const html=`<div class="sheet-inner">
+    <div class="sheet-title">📂 Google Drive থেকে রিস্টোর</div>
+    <div style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);border-radius:13px;padding:14px;margin-bottom:16px">
+      <div style="font-size:13px;color:#94a3b8;line-height:2">
+        <div style="margin-bottom:8px"><strong style="color:#e2e8f0">ধাপ ১:</strong> নিচের বাটনে চাপুন → Google Drive খুলবে</div>
+        <div style="margin-bottom:8px"><strong style="color:#e2e8f0">ধাপ ২:</strong> <strong style="color:#818cf8">NetBill_</strong> দিয়ে শুরু ফাইলটা খুঁজুন</div>
+        <div style="margin-bottom:8px"><strong style="color:#e2e8f0">ধাপ ৩:</strong> ফাইলটা ডাউনলোড করুন</div>
+        <div><strong style="color:#e2e8f0">ধাপ ৪:</strong> নিচে "রিস্টোর করুন" বাটন চাপুন</div>
+      </div>
+    </div>
+    <button class="btn" style="width:100%;padding:13px;font-size:14px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);margin-bottom:10px" onclick="window.open('https://drive.google.com/drive/search?q=NetBill','_blank')">
+      📂 Google Drive খুলুন
+    </button>
+    <button class="btn" style="width:100%;padding:13px;font-size:14px;background:linear-gradient(135deg,#7c3aed,#a78bfa)" onclick="closeSheet();restoreFromFile()">
+      ⬆️ রিস্টোর করুন
+    </button>
+    <button class="btn btn-ghost" style="width:100%;margin-top:8px" onclick="closeSheet()">বাতিল</button>
+  </div>`;
+  openSheet(html);
+}
+
+function googleDriveBackup(){
+  const data={customers,bills,smsLog,company,backupTime:new Date().toISOString()};
+  const json=JSON.stringify(data);
+  const date=new Date().toLocaleDateString('en-GB').replace(/\//g,'-');
+  
+  // Download file first
+  const blob=new Blob([json],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download='NetBill_'+date+'.json';
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+  
+  // Open Google Drive upload
+  setTimeout(()=>{
+    window.open('https://drive.google.com/drive/my-drive','_blank');
+    toast('✅ ফাইল ডাউনলোড হয়েছে! Drive এ আপলোড করুন');
+  }, 1000);
+}
+
 function downloadBackup(){
   const data={customers,bills,smsLog,company,backupTime:new Date().toISOString()};
   const json=JSON.stringify(data,null,2);
@@ -2353,8 +2396,14 @@ function renderGDriveSettings(){
         <button class="btn" style="padding:11px;font-size:13px;background:linear-gradient(135deg,#0369a1,#0ea5e9)" onclick="downloadBackup()">⬇️ ডাউনলোড</button>
         <button class="btn" style="padding:11px;font-size:13px;background:rgba(167,139,250,0.2);border:1px solid rgba(167,139,250,0.3);color:#c4b5fd" onclick="restoreFromFile()">⬆️ রিস্টোর</button>
       </div>
-      <button class="btn" style="width:100%;padding:13px;font-size:14px;background:linear-gradient(135deg,#15803d,#22c55e);display:flex;align-items:center;justify-content:center;gap:8px" onclick="whatsappBackup()">
+      <button class="btn" style="width:100%;padding:13px;font-size:14px;background:linear-gradient(135deg,#15803d,#22c55e);display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px" onclick="whatsappBackup()">
         <span style="font-size:20px">💚</span> WhatsApp এ ব্যাকআপ পাঠান
+      </button>
+      <button class="btn" style="width:100%;padding:13px;font-size:14px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px" onclick="googleDriveBackup()">
+        <span style="font-size:20px">📂</span> Google Drive এ সেভ করুন
+      </button>
+      <button class="btn" style="width:100%;padding:13px;font-size:14px;background:linear-gradient(135deg,#7c3aed,#a78bfa);display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px" onclick="googleDriveRestore()">
+        <span style="font-size:20px">📥</span> Google Drive থেকে রিস্টোর
       </button>
       <button class="btn btn-ghost" style="font-size:12px;padding:10px" onclick="disconnectGas()">🔌 সংযোগ বিচ্ছিন্ন করুন</button>
     </div>`;
@@ -2399,8 +2448,14 @@ function renderGDriveSettings(){
       <button class="btn" style="padding:11px;font-size:13px;background:linear-gradient(135deg,#0369a1,#0ea5e9)" onclick="downloadBackup()">⬇️ ডাউনলোড</button>
       <button class="btn" style="padding:11px;font-size:13px;background:rgba(167,139,250,0.2);border:1px solid rgba(167,139,250,0.3);color:#c4b5fd" onclick="restoreFromFile()">⬆️ রিস্টোর</button>
     </div>
-    <button class="btn" style="width:100%;padding:13px;font-size:14px;background:linear-gradient(135deg,#15803d,#22c55e);display:flex;align-items:center;justify-content:center;gap:8px" onclick="whatsappBackup()">
+    <button class="btn" style="width:100%;padding:13px;font-size:14px;background:linear-gradient(135deg,#15803d,#22c55e);display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px" onclick="whatsappBackup()">
       <span style="font-size:20px">💚</span> WhatsApp এ ব্যাকআপ পাঠান
+    </button>
+    <button class="btn" style="width:100%;padding:13px;font-size:14px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px" onclick="googleDriveBackup()">
+      <span style="font-size:20px">📂</span> Google Drive এ সেভ করুন
+    </button>
+    <button class="btn" style="width:100%;padding:13px;font-size:14px;background:linear-gradient(135deg,#7c3aed,#a78bfa);display:flex;align-items:center;justify-content:center;gap:8px" onclick="googleDriveRestore()">
+      <span style="font-size:20px">📥</span> Google Drive থেকে রিস্টোর
     </button>
   </div>`;
 }
