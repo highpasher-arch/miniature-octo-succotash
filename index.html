@@ -1575,7 +1575,7 @@ function openAdd(){
         <div id="a-phone-warn" style="display:none;margin-top:5px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:9px;padding:8px 12px;font-size:12px;color:#f87171;font-weight:600">⚠️ এই নম্বরটি পূর্বে ব্যবহার করা হয়েছে!</div>
       </div>
     </div>
-    <div class="field-wrap"><label class="inp-label">ঠিকানা</label><input class="inp" id="a-addr" placeholder="এলাকা, জেলা"/></div>
+    <div class="field-wrap"><label class="inp-label">ঠিকানা</label><input class="inp" id="a-addr" placeholder="এলাকা, জেলা" list="addr-suggestions" autocomplete="off"/><datalist id="addr-suggestions">${[...new Set(customers.map(c=>c.address).filter(Boolean))].map(a=>`<option value="${a}">`).join('')}</datalist></div>
 
     <div class="field-wrap">
       <label class="inp-label">প্যাকেজ</label>
@@ -1748,7 +1748,7 @@ function openEdit(id){
       <input class="inp" id="e-phone" value="${c.phone}" type="tel" oninput="checkDupPhoneEdit(this.value,${c.id},'e-phone-warn')"/>
       <div id="e-phone-warn" style="display:none;margin-top:5px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:9px;padding:8px 12px;font-size:12px;color:#f87171;font-weight:600">⚠️ এই নম্বরটি পূর্বে ব্যবহার করা হয়েছে!</div>
     </div>
-    <div class="field-wrap"><label class="inp-label">ঠিকানা</label><input class="inp" id="e-addr" value="${c.address||''}"/></div>
+    <div class="field-wrap"><label class="inp-label">ঠিকানা</label><input class="inp" id="e-addr" value="${c.address||''}" list="addr-suggestions-e" autocomplete="off"/><datalist id="addr-suggestions-e">${[...new Set(customers.map(x=>x.address).filter(Boolean))].map(a=>`<option value="${a}">`).join('')}</datalist></div>
     <div class="field-wrap">
       <label class="inp-label">প্যাকেজ</label>
       <select class="inp" id="e-pkg" onchange="toggleEditCustomPrice(this.value,${c.customPrice||0})">${PKGS.map(p=>`<option value="${p.id}" ${p.id===c.packageId?'selected':''} style="background:#0a0d18">${p.name}${p.price>0?' — ৳'+p.price+'/মাস':' — নিজে লিখুন'}</option>`).join('')}</select>
