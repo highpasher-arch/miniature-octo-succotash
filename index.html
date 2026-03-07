@@ -803,7 +803,7 @@ function customerFolderCard(c){
     ${photoHtml}
     <div style="flex:1;min-width:0">
       <div style="display:flex;align-items:center;gap:7px">
-        <div style="font-weight:800;font-size:15px;color:#f1f5f9">${c.name}</div>
+        <div style="font-weight:900;font-size:30px;color:#f1f5f9;letter-spacing:0.3px">${c.name}</div>
         <span style="background:${isActive?'rgba(34,197,94,0.12)':'rgba(239,68,68,0.12)'};color:${isActive?'#22c55e':'#f87171'};border-radius:5px;padding:1px 7px;font-size:9px;font-weight:800">${isActive?'চালু':'বন্ধ'}</span>
       </div>
       <div style="font-size:11px;color:#475569;margin-top:2px">${c.phone}${c.address?' • '+c.address.split(',')[0]:''}</div>
@@ -908,8 +908,8 @@ function toggleConnection(id){
   sv('nb2_c',customers); autoBackup();
 
   const msg = willBeActive
-    ? `সম্মানিত গ্রাহাক ${c.name}, আপনার সংযোগটি পুনরায় চালু করা হয়েছে বকেয়া পরিশোধের মাধ্যমে। ধন্যবাদ। - ${company.name} (${company.phone})`
-    : `সম্মানিত গ্রাহাক ${c.name}, আপনার সংযোগটি নিরবচ্ছিন্ন করা হলো বকেয়া থাকার কারণে। শীঘ্রই বকেয়া পরিশোধ করুন। - ${company.name} (${company.phone})`;
+    ? `সম্মানিত গ্রাহক ${c.name}, আপনার সংযোগটি পুনরায় চালু করা হয়েছে ✅। ধন্যবাদ। - ${company.name} (${company.phone})`
+    : `সম্মানিত গ্রাহক ${c.name}, আপনার সংযোগটি বকেয়ার কারণে বন্ধ করা হয়েছে 🔴। শীঘ্রই পরিশোধ করুন। - ${company.name} (${company.phone})`;
 
   const log={id:Date.now(),type:willBeActive?'reconnect':'disconnect',phone:c.phone,name:c.name,from:company.phone,fromName:company.name,msg,time:new Date().toLocaleString('bn-BD')};
   smsLog.unshift(log); sv('nb2_s',smsLog);
@@ -927,78 +927,109 @@ function openBillHistory(id){
   const p=getPkg(c.packageId);
   const totalPaid=cBills.reduce((s,b)=>s+b.paid,0);
   const totalDue=cBills.reduce((s,b)=>s+b.due,0);
+  const isActive=c.status==='active';
 
   let billRows='';
   if(cBills.length===0){
-    billRows=`<div style="text-align:center;padding:36px;color:#334155">
-      <div style="font-size:36px;margin-bottom:8px">📭</div>
-      <div style="font-size:13px;font-weight:600">এখনো কোনো বিল নেই</div>
+    billRows=`<div style="text-align:center;padding:48px 20px;color:#334155">
+      <div style="font-size:48px;margin-bottom:12px">📭</div>
+      <div style="font-size:14px;font-weight:700;color:#475569">এখনো কোনো বিল নেই</div>
     </div>`;
   } else {
     cBills.forEach(b=>{
       const sCo=b.status==='paid'?'#34d399':b.status==='partial'?'#fbbf24':'#fb923c';
       const sLb=b.status==='paid'?'✅ পরিশোধিত':b.status==='partial'?'⚡ আংশিক':'⚠️ বকেয়া';
       const isPaid=b.status==='paid';
-      billRows+=`<div style="padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.05);display:flex;align-items:center;gap:10px">
+      billRows+=`<div style="background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:16px;margin-bottom:10px;display:flex;align-items:center;gap:12px">
+        <div style="width:44px;height:44px;border-radius:12px;background:${sCo}15;border:1.5px solid ${sCo}30;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">${b.status==='paid'?'✅':b.status==='partial'?'⚡':'📋'}</div>
         <div style="flex:1;min-width:0">
-          <div style="font-weight:700;font-size:14px;color:#e2e8f0">${b.month}</div>
+          <div style="font-weight:800;font-size:15px;color:#f1f5f9">${b.month}</div>
           <div style="display:flex;align-items:center;gap:6px;margin-top:5px;flex-wrap:wrap">
             <span style="background:${sCo}18;color:${sCo};border:1px solid ${sCo}28;border-radius:6px;padding:2px 8px;font-size:10px;font-weight:800">${sLb}</span>
-            ${b.paid>0?`<span style="font-size:11px;color:#34d399;font-weight:600">পরিশোধ ৳${b.paid}</span>`:''}
+            ${b.paid>0?`<span style="font-size:11px;color:#34d399;font-weight:600">পরিশোধ ৳${fmt(b.paid)}</span>`:''}
           </div>
         </div>
         <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
           <div style="text-align:right">
-            <div style="font-size:11px;color:#475569">মোট ৳${b.amount}</div>
-            ${b.due>0?`<div style="font-size:18px;font-weight:900;color:#fb923c;font-family:'Exo 2',sans-serif;line-height:1.2">৳${b.due}</div>`:'<div style="font-size:13px;color:#34d399;font-weight:700">✅</div>'}
+            <div style="font-size:11px;color:#475569">মোট ৳${fmt(b.amount)}</div>
+            ${b.due>0?`<div style="font-size:20px;font-weight:900;color:#fb923c;font-family:'Exo 2',sans-serif;line-height:1.2">৳${fmt(b.due)}</div>`:'<div style="font-size:13px;color:#34d399;font-weight:700">✅</div>'}
           </div>
-          ${!isPaid?`<button onclick="closeSheet();setTimeout(()=>openPayModal(${b.id}),200)" style="background:linear-gradient(135deg,#166534,#16a34a);border:none;color:#fff;border-radius:11px;padding:10px 14px;cursor:pointer;font-size:13px;font-weight:800;font-family:inherit;white-space:nowrap;box-shadow:0 3px 12px #16a34a30">💳 পে</button>`:''}
+          ${!isPaid?`<button onclick="openPayModal(${b.id})" style="background:linear-gradient(135deg,#166534,#16a34a);border:none;color:#fff;border-radius:12px;padding:11px 15px;cursor:pointer;font-size:13px;font-weight:800;font-family:inherit;white-space:nowrap;box-shadow:0 3px 12px #16a34a30">💳 পে</button>`:''}
         </div>
       </div>`;
     });
   }
 
-  showSheet(`
-    <div class="sheet-handle"></div>
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px">
-      ${c.photo
-        ?`<img src="${c.photo}" style="width:54px;height:54px;border-radius:16px;object-fit:cover;border:2px solid ${av.bg}40;flex-shrink:0"/>`
-        :`<div class="av" style="width:54px;height:54px;background:${av.bg}22;color:${av.bg};font-size:22px;font-weight:800;border-radius:16px;border:2px solid ${av.bg}35;flex-shrink:0">${av.letter}</div>`}
-      <div style="flex:1;min-width:0">
-        <div style="font-family:'Exo 2',sans-serif;font-weight:900;font-size:18px;color:#f1f5f9">${c.name}</div>
-        <div style="font-size:12px;color:#64748b;margin-top:3px">${c.phone} • ${p.name}</div>
-        <div style="margin-top:5px;display:flex;gap:6px">
-          <a href="tel:${c.phone}" style="background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.22);color:#22c55e;border-radius:8px;padding:5px 12px;font-size:12px;font-weight:700;text-decoration:none;font-family:inherit">📞 কল</a>
-          <button onclick="openEdit(${c.id});closeSheet()" style="background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2);color:#818cf8;border-radius:8px;padding:5px 12px;cursor:pointer;font-size:12px;font-weight:700;font-family:inherit">✏️ এডিট</button>
-          <button onclick="toggleConnection(${c.id})" style="background:${c.status==='active'?'rgba(34,197,94,0.1)':'rgba(239,68,68,0.1)'};border:1px solid ${c.status==='active'?'rgba(34,197,94,0.25)':'rgba(239,68,68,0.25)'};color:${c.status==='active'?'#22c55e':'#f87171'};border-radius:8px;padding:5px 10px;cursor:pointer;font-size:11px;font-weight:800;font-family:inherit">${c.status==='active'?'🟢 চালু':'🔴 বন্ধ'}</button>
+  const photoHtml = c.photo
+    ?`<img src="${c.photo}" style="width:68px;height:68px;border-radius:20px;object-fit:cover;border:2.5px solid ${av.bg}50;flex-shrink:0"/>`
+    :`<div class="av" style="width:68px;height:68px;background:${av.bg}22;color:${av.bg};font-size:26px;font-weight:900;border-radius:20px;border:2px solid ${av.bg}35;flex-shrink:0">${av.letter}</div>`;
+
+  const html=`
+  <!-- বিল হিস্ট্রি পেজ -->
+  <div id="bill-history-page" style="min-height:100vh;background:#07090f;padding-bottom:100px">
+
+    <!-- হেডার -->
+    <div style="position:sticky;top:0;z-index:100;background:linear-gradient(180deg,rgba(7,9,15,0.98),rgba(7,9,15,0.92));backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,0.06);padding:12px 16px 12px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button onclick="closeBillHistory()" style="width:40px;height:40px;border-radius:12px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);color:#e2e8f0;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">←</button>
+        <div style="flex:1">
+          <div style="font-family:'Exo 2',sans-serif;font-weight:900;font-size:18px;color:#f1f5f9">বিলের ইতিহাস</div>
+          <div style="font-size:11px;color:#475569;margin-top:1px">${c.name} • ${c.phone}</div>
+        </div>
+        <button onclick="printCustomer(${c.id})" style="width:40px;height:40px;border-radius:12px;background:rgba(37,99,235,0.15);border:1px solid rgba(37,99,235,0.3);color:#60a5fa;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center">🖨️</button>
+      </div>
+    </div>
+
+    <div style="padding:16px">
+
+      <!-- গ্রাহক কার্ড -->
+      <div style="background:linear-gradient(135deg,rgba(14,165,233,0.08),rgba(167,139,250,0.08));border:1px solid rgba(14,165,233,0.2);border-radius:20px;padding:18px;margin-bottom:16px;display:flex;align-items:center;gap:14px">
+        ${photoHtml}
+        <div style="flex:1;min-width:0">
+          <div style="font-family:'Exo 2',sans-serif;font-weight:900;font-size:20px;color:#f1f5f9">${c.name}</div>
+          <div style="font-size:12px;color:#64748b;margin-top:3px">${c.phone}</div>
+          <div style="font-size:12px;color:#a78bfa;margin-top:2px">📦 ${p.name}</div>
+          <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
+            <a href="tel:${c.phone}" style="background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.25);color:#22c55e;border-radius:8px;padding:5px 12px;font-size:12px;font-weight:700;text-decoration:none">📞 কল</a>
+            <button onclick="openEdit(${c.id})" style="background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2);color:#818cf8;border-radius:8px;padding:5px 12px;cursor:pointer;font-size:12px;font-weight:700;font-family:inherit">✏️ এডিট</button>
+            <span style="background:${isActive?'rgba(34,197,94,0.1)':'rgba(239,68,68,0.1)'};border:1px solid ${isActive?'rgba(34,197,94,0.25)':'rgba(239,68,68,0.25)'};color:${isActive?'#22c55e':'#f87171'};border-radius:8px;padding:5px 10px;font-size:11px;font-weight:800">${isActive?'🟢 চালু':'🔴 বন্ধ'}</span>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- সারসংক্ষেপ -->
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px">
-      <div style="background:linear-gradient(145deg,#0c1e30,#091623);border:1px solid #38bdf81a;border-radius:13px;padding:12px;text-align:center">
-        <div style="font-size:18px;font-weight:900;color:#38bdf8;font-family:'Exo 2',sans-serif">${cBills.length}</div>
-        <div style="font-size:9.5px;color:#475569;font-weight:700;margin-top:3px">মোট বিল</div>
+      <!-- সারসংক্ষেপ -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px">
+        <div style="background:linear-gradient(145deg,#0c1e30,#091623);border:1px solid #38bdf81a;border-radius:16px;padding:14px;text-align:center">
+          <div style="font-size:22px;font-weight:900;color:#38bdf8;font-family:'Exo 2',sans-serif">${cBills.length}</div>
+          <div style="font-size:10px;color:#475569;font-weight:700;margin-top:4px">মোট বিল</div>
+        </div>
+        <div style="background:linear-gradient(145deg,#041a0e,#021009);border:1px solid #34d3991a;border-radius:16px;padding:14px;text-align:center">
+          <div style="font-size:16px;font-weight:900;color:#34d399;font-family:'Exo 2',sans-serif">৳${fmt(totalPaid)}</div>
+          <div style="font-size:10px;color:#475569;font-weight:700;margin-top:4px">পরিশোধিত</div>
+        </div>
+        <div style="background:linear-gradient(145deg,#1c0e00,#120900);border:1px solid #fb923c1a;border-radius:16px;padding:14px;text-align:center">
+          <div style="font-size:16px;font-weight:900;color:${totalDue>0?'#fb923c':'#34d399'};font-family:'Exo 2',sans-serif">৳${fmt(totalDue)}</div>
+          <div style="font-size:10px;color:#475569;font-weight:700;margin-top:4px">বকেয়া</div>
+        </div>
       </div>
-      <div style="background:linear-gradient(145deg,#041a0e,#021009);border:1px solid #34d3991a;border-radius:13px;padding:12px;text-align:center">
-        <div style="font-size:15px;font-weight:900;color:#34d399;font-family:'Exo 2',sans-serif">৳${fmt(totalPaid)}</div>
-        <div style="font-size:9.5px;color:#475569;font-weight:700;margin-top:3px">পরিশোধিত</div>
-      </div>
-      <div style="background:linear-gradient(145deg,#1c0e00,#120900);border:1px solid #fb923c1a;border-radius:13px;padding:12px;text-align:center">
-        <div style="font-size:15px;font-weight:900;color:${totalDue>0?'#fb923c':'#34d399'};font-family:'Exo 2',sans-serif">৳${fmt(totalDue)}</div>
-        <div style="font-size:9.5px;color:#475569;font-weight:700;margin-top:3px">বকেয়া</div>
-      </div>
-    </div>
 
-    <!-- বিল লিস্ট -->
-    <div style="font-size:11px;color:#334155;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;margin-bottom:10px">📋 বিলের ইতিহাস</div>
-    <div class="card" style="padding:0 14px">
+      <!-- বিল লিস্ট -->
+      <div style="font-size:11px;color:#475569;font-weight:700;letter-spacing:1px;margin-bottom:12px">📋 সকল বিল</div>
       ${billRows}
     </div>
-    <button class="btn" onclick="printCustomer(${c.id})" style="margin-top:12px;background:linear-gradient(135deg,#1e3a5f,#2563eb);box-shadow:0 4px 20px #2563eb25">🖨️ প্রিন্ট করুন</button>
-    <button class="btn btn-ghost" onclick="closeSheet()" style="margin-top:10px">বন্ধ করুন</button>
-  `);
+  </div>`;
+
+  // আলাদা পেজে দেখাও
+  document.getElementById('page-content').innerHTML = html;
+  document.getElementById('bot-nav').style.display = 'none';
+  document.getElementById('hdr').style.display = 'none';
+  window.scrollTo(0,0);
+}
+
+function closeBillHistory(){
+  document.getElementById('bot-nav').style.display = '';
+  document.getElementById('hdr').style.display = '';
+  render();
 }
 
 // ══════════════════════════════════════════
@@ -1237,7 +1268,7 @@ function renderBills(){
           ?`<img src="${cust.photo}" style="width:42px;height:42px;border-radius:12px;object-fit:cover;flex-shrink:0;border:2px solid ${av.bg}40"/>`
           :`<div style="width:42px;height:42px;border-radius:12px;background:${av.bg}20;color:${av.bg};font-size:17px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1px solid ${av.bg}30">${av.letter}</div>`}
         <div style="flex:1;min-width:0">
-          <div style="font-weight:800;font-size:15px;color:#f1f5f9">${c.name}</div>
+          <div style="font-weight:900;font-size:30px;color:#f1f5f9;letter-spacing:0.3px">${c.name}</div>
           <div style="font-size:11px;color:#475569;margin-top:2px">${c.phone} • ${p.name}</div>
           <div style="display:flex;gap:6px;margin-top:5px;flex-wrap:wrap">
             <span style="background:rgba(99,102,241,0.1);color:#818cf8;border:1px solid rgba(99,102,241,0.18);border-radius:6px;padding:2px 8px;font-size:10px;font-weight:700">${cb.length}টি বিল</span>
@@ -1318,7 +1349,7 @@ function renderPayments(){
         ?`<img src="${cust.photo}" style="width:42px;height:42px;border-radius:12px;object-fit:cover;flex-shrink:0;border:2px solid ${av.bg}40"/>`
         :`<div style="width:42px;height:42px;border-radius:12px;background:${av.bg}20;color:${av.bg};font-size:17px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1px solid ${av.bg}30">${av.letter}</div>`}
       <div style="flex:1;min-width:0">
-        <div style="font-weight:800;font-size:15px;color:#f1f5f9">${c.name}</div>
+        <div style="font-weight:900;font-size:30px;color:#f1f5f9;letter-spacing:0.3px">${c.name}</div>
         <div style="font-size:11px;color:#475569;margin-top:2px">${c.phone} • ${p.name}</div>
         <div style="display:flex;gap:6px;margin-top:5px;flex-wrap:wrap">
           ${paid>0?`<span style="background:rgba(52,211,153,0.1);color:#34d399;border:1px solid rgba(52,211,153,0.18);border-radius:6px;padding:2px 8px;font-size:10px;font-weight:700">সংগ্রহ ৳${fmt(paid)}</span>`:''}
@@ -1575,7 +1606,16 @@ function openAdd(){
         <div id="a-phone-warn" style="display:none;margin-top:5px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:9px;padding:8px 12px;font-size:12px;color:#f87171;font-weight:600">⚠️ এই নম্বরটি পূর্বে ব্যবহার করা হয়েছে!</div>
       </div>
     </div>
-    <div class="field-wrap"><label class="inp-label">ঠিকানা</label><input class="inp" id="a-addr" placeholder="এলাকা, জেলা" list="addr-suggestions" autocomplete="off"/><datalist id="addr-suggestions">${[...new Set(customers.map(c=>c.address).filter(Boolean))].map(a=>`<option value="${a}">`).join('')}</datalist></div>
+    <div class="field-wrap">
+      <label class="inp-label">ঠিকানা</label>
+      <div style="position:relative">
+        <input class="inp" id="a-addr" placeholder="✏️ নতুন এলাকা লিখুন..." autocomplete="off" oninput="addrDropFilter(this,'a-drop')" style="padding-right:40px"/>
+        <span onclick="addrDropShow('a-addr','a-drop')" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);width:28px;height:28px;background:linear-gradient(135deg,rgba(14,165,233,0.2),rgba(167,139,250,0.2));border-radius:8px;display:flex;align-items:center;justify-content:center;color:#38bdf8;font-size:16px;cursor:pointer">▾</span>
+        <div id="a-drop" style="display:none;position:absolute;left:0;right:0;top:100%;z-index:9999;background:rgba(10,15,30,0.97);backdrop-filter:blur(12px);border:1.5px solid rgba(14,165,233,0.35);border-radius:16px;max-height:200px;overflow-y:auto;box-shadow:0 12px 40px rgba(0,0,0,0.6),0 0 0 1px rgba(255,255,255,0.05);margin-top:6px">
+          ${(()=>{const areas=[...new Set(customers.map(c=>c.address).filter(Boolean))];return areas.length?areas.map(a=>`<div class="addr-opt" onclick="addrDropPick('a-addr','a-drop',this)" style="padding:11px 16px;color:#e2e8f0;font-size:14px;border-bottom:1px solid rgba(255,255,255,0.05);cursor:pointer;display:flex;align-items:center;gap:10px"><span style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,rgba(14,165,233,0.2),rgba(167,139,250,0.2));display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">📍</span><span>${a}</span></div>`).join(''):'<div style="padding:12px 16px;color:#64748b;font-size:13px">কোনো এলাকা নেই — নতুন লিখুন</div>';})()}
+        </div>
+      </div>
+    </div>
 
     <div class="field-wrap">
       <label class="inp-label">প্যাকেজ</label>
@@ -1699,7 +1739,7 @@ function saveAdd(){
   sv('nb2_b',bills);
 
   const now=new Date().toLocaleString('bn-BD');
-  const welMsg=`সম্মানিত গ্রাহক ${name}, আপনাকে ধন্যবাদ ${company.name} এর সাথে সংযুক্ত হওয়ার জন্য। আপনার সেবায় আমরা সর্বদা প্রস্তুত। - ${company.name} (${company.phone})`;
+  const welMsg=`সম্মানিত গ্রাহক ${name}, আপনাকে স্বাগতম! 🎉 ${company.name} এর সাথে সংযুক্ত হওয়ার জন্য ধন্যবাদ। - ${company.name} (${company.phone})`;
   smsLog.unshift({id:Date.now(),type:'welcome',phone,name,from:company.phone,fromName:company.name,msg:welMsg,time:now});
   sv('nb2_s',smsLog);
 
@@ -1748,7 +1788,16 @@ function openEdit(id){
       <input class="inp" id="e-phone" value="${c.phone}" type="tel" oninput="checkDupPhoneEdit(this.value,${c.id},'e-phone-warn')"/>
       <div id="e-phone-warn" style="display:none;margin-top:5px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:9px;padding:8px 12px;font-size:12px;color:#f87171;font-weight:600">⚠️ এই নম্বরটি পূর্বে ব্যবহার করা হয়েছে!</div>
     </div>
-    <div class="field-wrap"><label class="inp-label">ঠিকানা</label><input class="inp" id="e-addr" value="${c.address||''}" list="addr-suggestions-e" autocomplete="off"/><datalist id="addr-suggestions-e">${[...new Set(customers.map(x=>x.address).filter(Boolean))].map(a=>`<option value="${a}">`).join('')}</datalist></div>
+    <div class="field-wrap">
+      <label class="inp-label">ঠিকানা</label>
+      <div style="position:relative">
+        <input class="inp" id="e-addr" value="${c.address||''}" placeholder="✏️ নতুন এলাকা লিখুন..." autocomplete="off" oninput="addrDropFilter(this,'e-drop')" style="padding-right:40px"/>
+        <span onclick="addrDropShow('e-addr','e-drop')" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);width:28px;height:28px;background:linear-gradient(135deg,rgba(14,165,233,0.2),rgba(167,139,250,0.2));border-radius:8px;display:flex;align-items:center;justify-content:center;color:#38bdf8;font-size:16px;cursor:pointer">▾</span>
+        <div id="e-drop" style="display:none;position:absolute;left:0;right:0;top:100%;z-index:9999;background:rgba(10,15,30,0.97);backdrop-filter:blur(12px);border:1.5px solid rgba(14,165,233,0.35);border-radius:16px;max-height:200px;overflow-y:auto;box-shadow:0 12px 40px rgba(0,0,0,0.6),0 0 0 1px rgba(255,255,255,0.05);margin-top:6px">
+          ${(()=>{const areas=[...new Set(customers.map(x=>x.address).filter(Boolean))];return areas.length?areas.map(a=>`<div class="addr-opt" onclick="addrDropPick('e-addr','e-drop',this)" style="padding:11px 16px;color:#e2e8f0;font-size:14px;border-bottom:1px solid rgba(255,255,255,0.05);cursor:pointer;display:flex;align-items:center;gap:10px"><span style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,rgba(14,165,233,0.2),rgba(167,139,250,0.2));display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">📍</span><span>${a}</span></div>`).join(''):'<div style="padding:12px 16px;color:#64748b;font-size:13px">কোনো এলাকা নেই — নতুন লিখুন</div>';})()}
+        </div>
+      </div>
+    </div>
     <div class="field-wrap">
       <label class="inp-label">প্যাকেজ</label>
       <select class="inp" id="e-pkg" onchange="toggleEditCustomPrice(this.value,${c.customPrice||0})">${PKGS.map(p=>`<option value="${p.id}" ${p.id===c.packageId?'selected':''} style="background:#0a0d18">${p.name}${p.price>0?' — ৳'+p.price+'/মাস':' — নিজে লিখুন'}</option>`).join('')}</select>
@@ -1897,8 +1946,8 @@ function confirmPay(){
   sv('nb2_b',bills);
   const rem=Math.max(0,b.due-amount);
   const msg=rem>0
-    ?`সম্মানিত গ্রাহক ${b.customerName}, আপনার ${b.month} মাসের ওয়াই ফাই বিল ৳${amount} পেমেন্ট হয়েছে। বাকি: ৳${rem}। ধন্যবাদ। - ${company.name} (${company.phone})`
-    :`সম্মানিত গ্রাহক ${b.customerName}, আপনার ${b.month} মাসের ওয়াই ফাই বিল ৳${amount} পেমেন্ট হয়েছে ✅। ধন্যবাদ। - ${company.name} (${company.phone})`;
+    ?`সম্মানিত গ্রাহক ${b.customerName}, আপনার ${b.month} মাসের ওয়াই ফাই বিল ${amount}টাকা, আংশিক পেমেন্ট হয়েছে। বাকি: ${rem}টাকা। ধন্যবাদ। - ${company.name} (${company.phone})`
+    :`সম্মানিত গ্রাহক ${b.customerName}, আপনার ${b.month} মাসের ওয়াই ফাই বিল ${amount}টাকা, পেমেন্ট হয়েছে ✅। ধন্যবাদ। - ${company.name} (${company.phone})`;
   const log={id:Date.now(),type:'payment',phone:b.phone,name:b.customerName,from:company.phone,fromName:company.name,msg,time:new Date().toLocaleString('bn-BD'),amount,rem};
   smsLog.unshift(log); sv('nb2_s',smsLog); autoBackup();
   closeSheet();
@@ -1908,15 +1957,17 @@ function confirmPay(){
 
 function showSMSSuccess(log){
   const av=getAv(log.name,log.id%8+1);
+  const phone = log.phone.replace(/[^0-9+]/g,'');
+  const smsLink = `sms:${phone}?body=${encodeURIComponent(log.msg)}`;
   showSheet(`
     <div class="sheet-handle"></div>
-    <div style="text-align:center;margin-bottom:22px">
+    <div style="text-align:center;margin-bottom:20px">
       <div style="width:70px;height:70px;border-radius:22px;background:linear-gradient(135deg,#059669,#34d399);display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 14px;box-shadow:0 8px 32px #34d39940">📲</div>
-      <div style="font-family:'Exo 2',sans-serif;font-weight:900;font-size:20px;color:#34d399;letter-spacing:-0.5px">SMS সফলভাবে পাঠানো হয়েছে!</div>
-      <div style="font-size:13px;color:#334155;margin-top:5px">গ্রাহকের মোবাইলে পৌঁছে গেছে</div>
+      <div style="font-family:'Exo 2',sans-serif;font-weight:900;font-size:20px;color:#34d399;letter-spacing:-0.5px">SMS পাঠানো প্রস্তুত!</div>
+      <div style="font-size:13px;color:#64748b;margin-top:5px">নিচের বাটন চাপলে SMS অ্যাপ খুলবে</div>
     </div>
-    <div style="background:rgba(255,255,255,0.018);border:1px solid rgba(255,255,255,0.055);border-radius:18px;padding:18px;margin-bottom:20px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;padding-bottom:13px;border-bottom:1px solid rgba(255,255,255,0.05)">
+    <div style="background:rgba(255,255,255,0.018);border:1px solid rgba(255,255,255,0.055);border-radius:18px;padding:16px;margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:13px;padding-bottom:11px;border-bottom:1px solid rgba(255,255,255,0.05)">
         <div style="display:flex;align-items:center;gap:10px">
           <div style="width:36px;height:36px;border-radius:11px;background:linear-gradient(135deg,#4f46e5,#6366f1);display:flex;align-items:center;justify-content:center;font-size:17px">🏢</div>
           <div>
@@ -1934,9 +1985,11 @@ function showSMSSuccess(log){
         </div>
       </div>
       <div style="background:rgba(52,211,153,0.07);border:1px solid rgba(52,211,153,0.14);border-radius:16px 16px 16px 4px;padding:13px 15px;font-size:13px;color:#e2e8f0;line-height:1.8">${log.msg}</div>
-      <div style="font-size:10px;color:#1e2535;margin-top:8px;text-align:right">✅ Delivered • ${log.time}</div>
     </div>
-    <button class="btn btn-green" onclick="closeSheet()">✅ ঠিক আছে</button>
+    <button class="btn btn-green" style="width:100%;font-size:16px;padding:16px;gap:10px;display:flex;align-items:center;justify-content:center;margin-bottom:10px" onclick="window.location.href='${smsLink}';setTimeout(closeSheet,500)">
+      <span style="font-size:22px">📱</span> SMS অ্যাপ খুলুন ও Send করুন
+    </button>
+    <button class="btn" style="width:100%;background:rgba(255,255,255,0.05);color:#94a3b8;border:1px solid rgba(255,255,255,0.1)" onclick="closeSheet()">পরে করব</button>
   `);
 }
 
@@ -2019,14 +2072,63 @@ function saveComp(){
 // ══════════════════════════════════════════
 function sendBulkSMS(){
   const active=customers.filter(c=>c.status==='active');
-  const now=new Date().toLocaleString('bn-BD');
-  active.forEach(c=>{
-    const p=getPkg(c.packageId);
-    smsLog.unshift({id:Date.now()+c.id,type:'reminder',phone:c.phone,name:c.name,from:company.phone,fromName:company.name,msg:`সম্মানিত গ্রাহক ${c.name}, আপনার ${currentMonthLabel()} মাসের ওয়াই ফাই বিলটি অনুগ্রহ করে ১০ তারিখের উর্ধ্বে পরিশোধ করুন। আপনার সংযোগটি নিরবিচ্ছিন্ন রাখতে ১০ তারিখের মধ্যে পরিশোধ করুন। - ${company.name} (${company.phone})`,time:now});
-  });
-  sv('nb2_s',smsLog);
-  toast(`📱 ${active.length} জন গ্রাহককে SMS পাঠানো হয়েছে`);
-  if(page==='sms') render();
+  if(!active.length){toast('কোনো চালু গ্রাহক নেই');return;}
+
+  // প্রতিটা গ্রাহকের জন্য আলাদা msg তৈরি করে রাখি
+  const smsList = active.map(c=>({
+    phone: c.phone.replace(/[^0-9+]/g,''),
+    name: c.name,
+    msg: `সম্মানিত গ্রাহক ${c.name}, আপনার ${currentMonthLabel()} মাসের ওয়াই ফাই বিল পরিশোধ করুন। ধন্যবাদ। - ${company.name} (${company.phone})`
+  }));
+
+  let current = 0;
+
+  function sendNext(){
+    if(current >= smsList.length){
+      // সব শেষ
+      const now=new Date().toLocaleString('bn-BD');
+      active.forEach(c=>{
+        smsLog.unshift({id:Date.now()+c.id,type:'reminder',phone:c.phone,name:c.name,from:company.phone,fromName:company.name,
+          msg:`সম্মানিত গ্রাহক ${c.name}, আপনার ${currentMonthLabel()} মাসের ওয়াই ফাই বিল পরিশোধ করুন। ধন্যবাদ। - ${company.name} (${company.phone})`,time:now});
+      });
+      sv('nb2_s',smsLog);
+      closeSheet();
+      toast(`✅ ${active.length} জনকে SMS পাঠানো হয়েছে`);
+      if(page==='sms') render();
+      return;
+    }
+
+    const item = smsList[current];
+    const remaining = smsList.length - current;
+    const smsUrl = `sms:${item.phone}?body=${encodeURIComponent(item.msg)}`;
+
+    showSheet(`
+      <div class="sheet-handle"></div>
+      <div style="text-align:center;margin-bottom:18px">
+        <div style="font-size:13px;color:#64748b;margin-bottom:6px">SMS পাঠাচ্ছেন</div>
+        <div style="font-family:'Exo 2',sans-serif;font-weight:900;font-size:22px;color:#38bdf8">${current+1} / ${smsList.length}</div>
+        <div style="height:6px;background:rgba(255,255,255,0.07);border-radius:10px;margin:10px 20px 0">
+          <div style="height:6px;background:linear-gradient(90deg,#0ea5e9,#a78bfa);border-radius:10px;width:${Math.round((current/smsList.length)*100)}%;transition:width 0.4s"></div>
+        </div>
+      </div>
+
+      <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:16px;margin-bottom:16px">
+        <div style="font-weight:800;font-size:16px;color:#f1f5f9;margin-bottom:4px">📱 ${item.name}</div>
+        <div style="font-size:13px;color:#38bdf8;margin-bottom:10px">${item.phone}</div>
+        <div style="font-size:13px;color:#94a3b8;line-height:1.7;background:rgba(14,165,233,0.05);border-radius:10px;padding:10px">${item.msg}</div>
+      </div>
+
+      <button class="btn btn-green" style="width:100%;font-size:16px;padding:16px;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:10px"
+        onclick="window.location.href='${smsUrl}'; setTimeout(()=>{ current=${current+1}; sendNext(); },1500)">
+        <span style="font-size:22px">📤</span> Send করুন → পরের জন
+      </button>
+      <button class="btn" style="background:rgba(239,68,68,0.1);color:#f87171;border:1px solid rgba(239,68,68,0.2);width:100%"
+        onclick="closeSheet();toast('বাতিল করা হয়েছে')">❌ বন্ধ করুন</button>
+      <div style="text-align:center;font-size:12px;color:#334155;margin-top:10px">আরো ${remaining-1} জন বাকি</div>
+    `);
+  }
+
+  sendNext();
 }
 
 // ══════════════════════════════════════════
@@ -2041,6 +2143,93 @@ const GAS_SCRIPT_CODE = `function doPost(e){try{var data=e.postData.contents;var
 function doGet(e){try{var files=DriveApp.getFilesByName('NetBill_Backup.json');if(files.hasNext()){var content=files.next().getBlob().getDataAsString();return ContentService.createTextOutput(content).setMimeType(ContentService.MimeType.JSON);}return ContentService.createTextOutput(JSON.stringify({error:'backup_not_found'})).setMimeType(ContentService.MimeType.JSON);}catch(err){return ContentService.createTextOutput(JSON.stringify({error:err.toString()})).setMimeType(ContentService.MimeType.JSON);}}`;
 
 function getGasUrl(){ return ld('nb2_gasurl',''); }
+
+// ══════════════════════════════════════════
+//  লোকাল ব্যাকআপ — ফাইল ডাউনলোড / রিস্টোর
+// ══════════════════════════════════════════
+function downloadBackup(){
+  const data={customers,bills,smsLog,company,backupTime:new Date().toISOString()};
+  const json=JSON.stringify(data,null,2);
+  const blob=new Blob([json],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  const date=new Date().toLocaleDateString('en-GB').replace(/\//g,'-');
+  a.href=url; a.download=`NetBill_backup_${date}.json`;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+  const ts=new Date().toLocaleString('bn-BD');
+  sv('nb2_lastbackup',ts);
+  toast('✅ ব্যাকআপ ফাইল ডাউনলোড হয়েছে!');
+}
+
+function restoreFromFile(){
+  const inp=document.createElement('input');
+  inp.type='file'; inp.accept='.json';
+  inp.onchange=function(e){
+    const file=e.target.files[0]; if(!file) return;
+    const reader=new FileReader();
+    reader.onload=function(ev){
+      try{
+        const data=JSON.parse(ev.target.result);
+        if(!data.customers){toast('ভুল ফাইল!',true);return;}
+        if(!confirm('সতর্কতা: বর্তমান সব ডেটা মুছে নতুন ডেটা লোড হবে। নিশ্চিত?')) return;
+        if(data.customers){customers=data.customers;sv('nb2_c',customers)}
+        if(data.bills){bills=data.bills;sv('nb2_b',bills)}
+        if(data.smsLog){smsLog=data.smsLog;sv('nb2_s',smsLog)}
+        if(data.company){company=data.company;sv('nb2_co',company)}
+        closeSheet(); toast('✅ ব্যাকআপ থেকে ডেটা পুনরুদ্ধার হয়েছে!'); render();
+      }catch(err){toast('ফাইল পড়তে সমস্যা হয়েছে!',true);}
+    };
+    reader.readAsText(file);
+  };
+  document.body.appendChild(inp); inp.click(); document.body.removeChild(inp);
+}
+
+function openLocalBackupSheet(){
+  const lastBackup=ld('nb2_lastbackup','') || 'কখনো হয়নি';
+  showSheet(`
+    <div class="sheet-handle"></div>
+    <div style="text-align:center;margin-bottom:22px">
+      <div style="width:70px;height:70px;border-radius:22px;background:linear-gradient(135deg,#0369a1,#0ea5e9);display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 14px;box-shadow:0 8px 32px #0ea5e940">💾</div>
+      <div style="font-family:'Exo 2',sans-serif;font-weight:900;font-size:20px;color:#38bdf8">লোকাল ব্যাকআপ</div>
+      <div style="font-size:12px;color:#475569;margin-top:5px">ফোনে সেভ করুন — ইন্টারনেট লাগবে না</div>
+    </div>
+
+    <div style="background:rgba(14,165,233,0.06);border:1px solid rgba(14,165,233,0.15);border-radius:16px;padding:14px;margin-bottom:18px;display:flex;align-items:center;gap:12px">
+      <span style="font-size:22px">🕐</span>
+      <div>
+        <div style="font-size:11px;color:#475569;font-weight:700">সর্বশেষ ব্যাকআপ</div>
+        <div style="font-size:13px;color:#e2e8f0;font-weight:700;margin-top:2px">${lastBackup}</div>
+      </div>
+    </div>
+
+    <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:14px;margin-bottom:18px">
+      <div style="font-size:11px;color:#475569;font-weight:700;margin-bottom:12px">📊 বর্তমান ডেটা</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center">
+        <div style="background:rgba(14,165,233,0.08);border-radius:12px;padding:10px">
+          <div style="font-size:20px;font-weight:900;color:#38bdf8">${customers.length}</div>
+          <div style="font-size:10px;color:#475569;margin-top:2px">গ্রাহক</div>
+        </div>
+        <div style="background:rgba(52,211,153,0.08);border-radius:12px;padding:10px">
+          <div style="font-size:20px;font-weight:900;color:#34d399">${bills.length}</div>
+          <div style="font-size:10px;color:#475569;margin-top:2px">বিল</div>
+        </div>
+        <div style="background:rgba(167,139,250,0.08);border-radius:12px;padding:10px">
+          <div style="font-size:20px;font-weight:900;color:#a78bfa">${smsLog.length}</div>
+          <div style="font-size:10px;color:#475569;margin-top:2px">SMS লগ</div>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn" onclick="downloadBackup();closeSheet()" style="width:100%;background:linear-gradient(135deg,#0369a1,#0ea5e9);box-shadow:0 4px 20px #0ea5e930;font-size:16px;padding:16px;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:10px">
+      <span style="font-size:22px">⬇️</span> ব্যাকআপ ডাউনলোড করুন
+    </button>
+    <button class="btn" onclick="restoreFromFile()" style="width:100%;background:rgba(167,139,250,0.15);border:1px solid rgba(167,139,250,0.3);color:#c4b5fd;font-size:15px;padding:14px;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:10px">
+      <span style="font-size:20px">⬆️</span> ফাইল থেকে রিস্টোর করুন
+    </button>
+    <button class="btn btn-ghost" onclick="closeSheet()" style="width:100%">বন্ধ করুন</button>
+  `);
+}
 
 async function doBackup(){
   const url=getGasUrl();
@@ -2133,6 +2322,12 @@ function renderGDriveSettings(){
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
         <button class="btn btn-green" style="padding:11px;font-size:13px" onclick="doBackup().then(()=>toast('✅ ব্যাকআপ সম্পন্ন!'))">☁️ এখনই ব্যাকআপ</button>
         <button class="btn btn-purple" style="padding:11px;font-size:13px" onclick="restoreFromDrive()">⬇️ পুনরুদ্ধার</button>
+      </div>
+      <div style="height:1px;background:rgba(255,255,255,0.06);margin:14px 0"></div>
+      <div style="font-size:11px;color:#475569;font-weight:700;margin-bottom:10px">📱 লোকাল ব্যাকআপ (ইন্টারনেট ছাড়া)</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+        <button class="btn" style="padding:11px;font-size:13px;background:linear-gradient(135deg,#0369a1,#0ea5e9)" onclick="downloadBackup()">⬇️ ডাউনলোড</button>
+        <button class="btn" style="padding:11px;font-size:13px;background:rgba(167,139,250,0.2);border:1px solid rgba(167,139,250,0.3);color:#c4b5fd" onclick="restoreFromFile()">⬆️ রিস্টোর</button>
       </div>
       <button class="btn btn-ghost" style="font-size:12px;padding:10px" onclick="disconnectGas()">🔌 সংযোগ বিচ্ছিন্ন করুন</button>
     </div>`;
@@ -2284,6 +2479,38 @@ if(_savedCid && gAccessToken){
   _s.src='https://accounts.google.com/gsi/client';
   _s.onload=()=>setTimeout(()=>{initGoogleDrive();setTimeout(doBackup,2000)},400);
   document.head.appendChild(_s);
+}
+
+
+function addrDropShow(inputId, dropId){
+  const drop = document.getElementById(dropId);
+  if(!drop) return;
+  // show all options
+  drop.querySelectorAll('.addr-opt').forEach(d=>{ d.style.display=''; });
+  drop.style.display = drop.querySelectorAll('.addr-opt').length ? 'block' : 'none';
+  setTimeout(()=>document.addEventListener('click', function h(e){
+    const inp = document.getElementById(inputId);
+    if(!drop.contains(e.target) && e.target!==inp){ drop.style.display='none'; document.removeEventListener('click',h); }
+  }), 100);
+}
+function addrDropFilter(inp, dropId){
+  const drop = document.getElementById(dropId);
+  if(!drop) return;
+  const val = inp.value.toLowerCase();
+  let any = false;
+  drop.querySelectorAll('.addr-opt').forEach(d=>{
+    const show = !val || d.querySelector('span:last-child').textContent.toLowerCase().includes(val);
+    d.style.display = show ? '' : 'none';
+    if(show) any = true;
+  });
+  drop.style.display = any ? 'block' : 'none';
+}
+function addrDropPick(inputId, dropId, el){
+  const spans = el.querySelectorAll('span');
+  const val = spans.length>1 ? spans[spans.length-1].textContent.trim() : el.textContent.trim();
+  document.getElementById(inputId).value = val;
+  document.getElementById(dropId).style.display = 'none';
+  document.getElementById(inputId).focus();
 }
 </script>
 </body>
