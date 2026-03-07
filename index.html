@@ -2393,6 +2393,15 @@ function renderGDriveSettings(){
     </div>
     <button class="btn" style="background:linear-gradient(135deg,#14532d,#16a34a);box-shadow:0 4px 20px #16a34a25;margin-bottom:8px" onclick="saveGasUrl()">☁️ Google Drive সংযুক্ত করুন</button>
     <div style="font-size:11px;color:#334155;text-align:center;line-height:1.7">সংযুক্ত হলে ডেটা বদলালেই অটো ব্যাকআপ হবে<br/>📄 Drive-এ <strong style="color:#64748b">NetBill_Backup.json</strong> হিসেবে সেভ থাকবে</div>
+    <div style="height:1px;background:rgba(255,255,255,0.06);margin:14px 0"></div>
+    <div style="font-size:11px;color:#475569;font-weight:700;margin-bottom:10px">📱 লোকাল ব্যাকআপ (ইন্টারনেট ছাড়া)</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px">
+      <button class="btn" style="padding:11px;font-size:13px;background:linear-gradient(135deg,#0369a1,#0ea5e9)" onclick="downloadBackup()">⬇️ ডাউনলোড</button>
+      <button class="btn" style="padding:11px;font-size:13px;background:rgba(167,139,250,0.2);border:1px solid rgba(167,139,250,0.3);color:#c4b5fd" onclick="restoreFromFile()">⬆️ রিস্টোর</button>
+    </div>
+    <button class="btn" style="width:100%;padding:13px;font-size:14px;background:linear-gradient(135deg,#15803d,#22c55e);display:flex;align-items:center;justify-content:center;gap:8px" onclick="whatsappBackup()">
+      <span style="font-size:20px">💚</span> WhatsApp এ ব্যাকআপ পাঠান
+    </button>
   </div>`;
 }
 
