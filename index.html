@@ -3,7 +3,9 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
-<meta name="theme-color" content="#07090f"/>
+<meta name="theme-color" content="#0ea5e9"/>
+<link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%20%22NetBill%22%2C%20%22short_name%22%3A%20%22NetBill%22%2C%20%22description%22%3A%20%22WiFi%20Billing%20Manager%22%2C%20%22start_url%22%3A%20%22.%22%2C%20%22display%22%3A%20%22standalone%22%2C%20%22background_color%22%3A%20%22%2307090f%22%2C%20%22theme_color%22%3A%20%22%230ea5e9%22%2C%20%22orientation%22%3A%20%22portrait%22%2C%20%22icons%22%3A%20%5B%7B%22src%22%3A%20%22data%3Aimage/svg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iYmciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdHlsZT0ic3RvcC1jb2xvcjojMWUxYjRiIi8%2BCiAgICAgIDxzdG9wIG9mZnNldD0iNTAlIiBzdHlsZT0ic3RvcC1jb2xvcjojMzEyZTgxIi8%2BCiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3R5bGU9InN0b3AtY29sb3I6IzBlYTVlOSIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZGlzaCIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMTAwJSI%2BCiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiMzOGJkZjgiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdHlsZT0ic3RvcC1jb2xvcjojYTc4YmZhIi8%2BCiAgICA8L2xpbmVhckdyYWRpZW50PgogIDwvZGVmcz4KICA8IS0tIEJhY2tncm91bmQgcm91bmRlZCByZWN0IC0tPgogIDxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEwIiBmaWxsPSJ1cmwoI2JnKSIvPgogIDwhLS0gR2xvdyBlZmZlY3QgLS0%2BCiAgPGNpcmNsZSBjeD0iMjU2IiBjeT0iMjIwIiByPSIxMzAiIGZpbGw9IiMwZWE1ZTkiIG9wYWNpdHk9IjAuMDgiLz4KICA8IS0tIFNhdGVsbGl0ZSBkaXNoIGJvd2wgLS0%2BCiAgPGVsbGlwc2UgY3g9IjIyMCIgY3k9IjI3MCIgcng9IjExMCIgcnk9Ijk1IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjZGlzaCkiIHN0cm9rZS13aWR0aD0iMjIiIHN0cm9rZS1kYXNoYXJyYXk9IjEwMDAiIHN0cm9rZS1kYXNob2Zmc2V0PSI0MDAiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDwhLS0gRGlzaCBpbm5lciAtLT4KICA8ZWxsaXBzZSBjeD0iMjIwIiBjeT0iMjcwIiByeD0iNzAiIHJ5PSI2MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMzhiZGY4IiBzdHJva2Utd2lkdGg9IjEyIiBvcGFjaXR5PSIwLjUiLz4KICA8IS0tIERpc2ggY2VudGVyIGRvdCAtLT4KICA8Y2lyY2xlIGN4PSIyMjAiIGN5PSIyNzAiIHI9IjE0IiBmaWxsPSIjMzhiZGY4Ii8%2BCiAgPCEtLSBEaXNoIHBvbGUgLS0%2BCiAgPGxpbmUgeDE9IjIyMCIgeTE9IjI3MCIgeDI9IjIyMCIgeTI9IjM3MCIgc3Ryb2tlPSIjYTc4YmZhIiBzdHJva2Utd2lkdGg9IjE4IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8IS0tIERpc2ggYmFzZSAtLT4KICA8ZWxsaXBzZSBjeD0iMjIwIiBjeT0iMzcyIiByeD0iNDUiIHJ5PSIxNCIgZmlsbD0iI2E3OGJmYSIgb3BhY2l0eT0iMC44Ii8%2BCiAgPCEtLSBTaWduYWwgd2F2ZXMgLS0%2BCiAgPHBhdGggZD0iTSAzMDUgMTYwIFEgMzQwIDE5NSAzMDUgMjMwIiBmaWxsPSJub25lIiBzdHJva2U9IiMzOGJkZjgiIHN0cm9rZS13aWR0aD0iMTQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgb3BhY2l0eT0iMC45Ii8%2BCiAgPHBhdGggZD0iTSAzMjUgMTM1IFEgMzgwIDE4NSAzMjUgMjU1IiBmaWxsPSJub25lIiBzdHJva2U9IiMzOGJkZjgiIHN0cm9rZS13aWR0aD0iMTIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgb3BhY2l0eT0iMC42Ii8%2BCiAgPHBhdGggZD0iTSAzNDUgMTEwIFEgNDIwIDE3NSAzNDUgMjgwIiBmaWxsPSJub25lIiBzdHJva2U9IiMzOGJkZjgiIHN0cm9rZS13aWR0aD0iMTAiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgb3BhY2l0eT0iMC4zIi8%2BCiAgPCEtLSBTaWduYWwgZG90IC0tPgogIDxjaXJjbGUgY3g9IjI5NSIgY3k9IjE5NSIgcj0iMTAiIGZpbGw9IiMzOGJkZjgiLz4KICA8IS0tIEJEVCBzeW1ib2wgYm90dG9tIHJpZ2h0IC0tPgogIDx0ZXh0IHg9IjM0MCIgeT0iNDIwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtd2VpZ2h0PSI5MDAiIGZvbnQtc2l6ZT0iNzIiIGZpbGw9IiNmYmJmMjQiIG9wYWNpdHk9IjAuOTUiPuCnszwvdGV4dD4KPC9zdmc%2B%22%2C%20%22sizes%22%3A%20%22512x512%22%2C%20%22type%22%3A%20%22image/svg%2Bxml%22%2C%20%22purpose%22%3A%20%22any%20maskable%22%7D%5D%7D"/>
+<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iYmciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdHlsZT0ic3RvcC1jb2xvcjojMWUxYjRiIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iNTAlIiBzdHlsZT0ic3RvcC1jb2xvcjojMzEyZTgxIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3R5bGU9InN0b3AtY29sb3I6IzBlYTVlOSIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZGlzaCIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMTAwJSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiMzOGJkZjgiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdHlsZT0ic3RvcC1jb2xvcjojYTc4YmZhIi8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogIDwvZGVmcz4KICA8IS0tIEJhY2tncm91bmQgcm91bmRlZCByZWN0IC0tPgogIDxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEwIiBmaWxsPSJ1cmwoI2JnKSIvPgogIDwhLS0gR2xvdyBlZmZlY3QgLS0+CiAgPGNpcmNsZSBjeD0iMjU2IiBjeT0iMjIwIiByPSIxMzAiIGZpbGw9IiMwZWE1ZTkiIG9wYWNpdHk9IjAuMDgiLz4KICA8IS0tIFNhdGVsbGl0ZSBkaXNoIGJvd2wgLS0+CiAgPGVsbGlwc2UgY3g9IjIyMCIgY3k9IjI3MCIgcng9IjExMCIgcnk9Ijk1IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjZGlzaCkiIHN0cm9rZS13aWR0aD0iMjIiIHN0cm9rZS1kYXNoYXJyYXk9IjEwMDAiIHN0cm9rZS1kYXNob2Zmc2V0PSI0MDAiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDwhLS0gRGlzaCBpbm5lciAtLT4KICA8ZWxsaXBzZSBjeD0iMjIwIiBjeT0iMjcwIiByeD0iNzAiIHJ5PSI2MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMzhiZGY4IiBzdHJva2Utd2lkdGg9IjEyIiBvcGFjaXR5PSIwLjUiLz4KICA8IS0tIERpc2ggY2VudGVyIGRvdCAtLT4KICA8Y2lyY2xlIGN4PSIyMjAiIGN5PSIyNzAiIHI9IjE0IiBmaWxsPSIjMzhiZGY4Ii8+CiAgPCEtLSBEaXNoIHBvbGUgLS0+CiAgPGxpbmUgeDE9IjIyMCIgeTE9IjI3MCIgeDI9IjIyMCIgeTI9IjM3MCIgc3Ryb2tlPSIjYTc4YmZhIiBzdHJva2Utd2lkdGg9IjE4IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8IS0tIERpc2ggYmFzZSAtLT4KICA8ZWxsaXBzZSBjeD0iMjIwIiBjeT0iMzcyIiByeD0iNDUiIHJ5PSIxNCIgZmlsbD0iI2E3OGJmYSIgb3BhY2l0eT0iMC44Ii8+CiAgPCEtLSBTaWduYWwgd2F2ZXMgLS0+CiAgPHBhdGggZD0iTSAzMDUgMTYwIFEgMzQwIDE5NSAzMDUgMjMwIiBmaWxsPSJub25lIiBzdHJva2U9IiMzOGJkZjgiIHN0cm9rZS13aWR0aD0iMTQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgb3BhY2l0eT0iMC45Ii8+CiAgPHBhdGggZD0iTSAzMjUgMTM1IFEgMzgwIDE4NSAzMjUgMjU1IiBmaWxsPSJub25lIiBzdHJva2U9IiMzOGJkZjgiIHN0cm9rZS13aWR0aD0iMTIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgb3BhY2l0eT0iMC42Ii8+CiAgPHBhdGggZD0iTSAzNDUgMTEwIFEgNDIwIDE3NSAzNDUgMjgwIiBmaWxsPSJub25lIiBzdHJva2U9IiMzOGJkZjgiIHN0cm9rZS13aWR0aD0iMTAiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgb3BhY2l0eT0iMC4zIi8+CiAgPCEtLSBTaWduYWwgZG90IC0tPgogIDxjaXJjbGUgY3g9IjI5NSIgY3k9IjE5NSIgcj0iMTAiIGZpbGw9IiMzOGJkZjgiLz4KICA8IS0tIEJEVCBzeW1ib2wgYm90dG9tIHJpZ2h0IC0tPgogIDx0ZXh0IHg9IjM0MCIgeT0iNDIwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtd2VpZ2h0PSI5MDAiIGZvbnQtc2l6ZT0iNzIiIGZpbGw9IiNmYmJmMjQiIG9wYWNpdHk9IjAuOTUiPuCnszwvdGV4dD4KPC9zdmc+"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <meta name="apple-mobile-web-app-title" content="NetBill"/>
@@ -18,6 +20,8 @@ input:focus,select:focus{outline:none}
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:#1e2535;border-radius:4px}
+@keyframes splashPulse{0%,100%{opacity:0.2;transform:scale(0.8)}50%{opacity:1;transform:scale(1.2)}}
+.splash-dot{width:10px;height:10px;border-radius:50%;background:#38bdf8;animation:splashPulse 1.2s ease infinite;box-shadow:0 0 10px #38bdf860}
 .pin-dot{width:16px;height:16px;border-radius:50%;background:rgba(255,255,255,0.1);border:2px solid rgba(255,255,255,0.15);transition:.2s}
 .pin-dot.filled{background:#6366f1;border-color:#6366f1;box-shadow:0 0 10px #6366f160}
 
@@ -125,6 +129,24 @@ input:focus,select:focus{outline:none}
 </head>
 <body>
 <div id="root">
+
+<!-- SPLASH SCREEN -->
+<div id="splash-screen" style="position:fixed;inset:0;z-index:99999;background:linear-gradient(135deg,#07090f 0%,#0f0c29 40%,#1a0533 70%,#07090f 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 0.6s ease">
+  <div style="text-align:center">
+    <!-- Icon -->
+    <div style="width:110px;height:110px;border-radius:28px;overflow:hidden;margin:0 auto 24px;box-shadow:0 20px 60px rgba(14,165,233,0.4),0 0 0 1px rgba(255,255,255,0.1)">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><defs><linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#1e1b4b"/><stop offset="50%" style="stop-color:#312e81"/><stop offset="100%" style="stop-color:#0ea5e9"/></linearGradient><linearGradient id="dish" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#38bdf8"/><stop offset="100%" style="stop-color:#a78bfa"/></linearGradient></defs><!-- Background rounded rect --><rect width="512" height="512" rx="110" fill="url(#bg)"/><!-- Glow effect --><circle cx="256" cy="220" r="130" fill="#0ea5e9" opacity="0.08"/><!-- Satellite dish bowl --><ellipse cx="220" cy="270" rx="110" ry="95" fill="none" stroke="url(#dish)" stroke-width="22" stroke-dasharray="1000" stroke-dashoffset="400" stroke-linecap="round"/><!-- Dish inner --><ellipse cx="220" cy="270" rx="70" ry="60" fill="none" stroke="#38bdf8" stroke-width="12" opacity="0.5"/><!-- Dish center dot --><circle cx="220" cy="270" r="14" fill="#38bdf8"/><!-- Dish pole --><line x1="220" y1="270" x2="220" y2="370" stroke="#a78bfa" stroke-width="18" stroke-linecap="round"/><!-- Dish base --><ellipse cx="220" cy="372" rx="45" ry="14" fill="#a78bfa" opacity="0.8"/><!-- Signal waves --><path d="M 305 160 Q 340 195 305 230" fill="none" stroke="#38bdf8" stroke-width="14" stroke-linecap="round" opacity="0.9"/><path d="M 325 135 Q 380 185 325 255" fill="none" stroke="#38bdf8" stroke-width="12" stroke-linecap="round" opacity="0.6"/><path d="M 345 110 Q 420 175 345 280" fill="none" stroke="#38bdf8" stroke-width="10" stroke-linecap="round" opacity="0.3"/><!-- Signal dot --><circle cx="295" cy="195" r="10" fill="#38bdf8"/><!-- BDT symbol bottom right --><text x="340" y="420" font-family="Arial" font-weight="900" font-size="72" fill="#fbbf24" opacity="0.95">৳</text></svg>
+    </div>
+    <div style="font-family:'Exo 2',sans-serif;font-weight:900;font-size:32px;color:#f1f5f9;letter-spacing:1px">NetBill</div>
+    <div style="font-size:13px;color:#38bdf8;margin-top:6px;font-weight:600;letter-spacing:2px">WiFi BILLING MANAGER</div>
+    <!-- Loading dots -->
+    <div style="display:flex;gap:8px;justify-content:center;margin-top:32px">
+      <div class="splash-dot" style="animation-delay:0s"></div>
+      <div class="splash-dot" style="animation-delay:0.2s"></div>
+      <div class="splash-dot" style="animation-delay:0.4s"></div>
+    </div>
+  </div>
+</div>
 
 <!-- LOCK SCREEN -->
 <div id="lock-screen" style="display:none;position:fixed;inset:0;z-index:9999;background:#07090f;flex-direction:column;align-items:center;justify-content:center;padding:24px">
@@ -2248,7 +2270,12 @@ if('serviceWorker' in navigator){
 // চলতি মাসের বিল অটো তৈরি (শুধু যদি এখনো না থাকে)
 autoGenerateMonthlyBills();
 render();
-checkInitialLock();
+// Splash screen — ২ সেকেন্ড দেখাবে
+setTimeout(()=>{
+  const sp = document.getElementById('splash-screen');
+  if(sp){ sp.style.opacity='0'; setTimeout(()=>sp.remove(),600); }
+  checkInitialLock();
+}, 2000);
 
 // Google Drive — আগে থেকে token থাকলে GIS লোড করো
 const _savedCid=ld('nb2_gid','');
