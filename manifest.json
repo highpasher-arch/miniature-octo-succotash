@@ -1,0 +1,1 @@
+{"name":"NetBill","short_name":"NetBill","description":"WiFi Billing Manager","start_url":"./index.html","display":"standalone","background_color":"#07090f","theme_color":"#0ea5e9","orientation":"portrait","icons":[{"src":"https://highpasher-arch.github.io/miniature-octo-succotash/icon.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}]}
