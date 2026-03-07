@@ -126,6 +126,10 @@ input:focus,select:focus{outline:none}
 /* ── Divider ── */
 .divider{height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.06),transparent);margin:4px 0 14px}
 </style>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 </head>
 <body>
 <div id="root">
@@ -242,6 +246,104 @@ const PKGS = [
   {id:5,name:"কাস্টম",speed:"Custom",price:0,color:"#f43f5e",bg:"linear-gradient(145deg,#1f0a0a,#130606)"},
 ];
 const AV_COLORS=["#6366f1","#ec4899","#14b8a6","#f97316","#8b5cf6","#06b6d4","#84cc16","#f43f5e"];
+
+
+// ══════════════════════════════════════════
+//  FIREBASE CLOUD SYNC
+// ══════════════════════════════════════════
+let _fbApp=null,_fbDb=null,_syncCode=localStorage.getItem('nb2_synccode')||'',_fbConfig=null;
+try{_fbConfig=JSON.parse(localStorage.getItem('nb2_fbconfig')||'null');}catch(e){}
+
+function initFirebase(){
+  if(!_fbConfig||!_syncCode)return;
+  try{
+    if(!firebase.apps.length) _fbApp=firebase.initializeApp(_fbConfig);
+    else _fbApp=firebase.app();
+    _fbDb=firebase.database(_fbApp);
+    loadFromFirebase();
+  }catch(e){console.log('FB init:',e);}
+}
+
+function getFbRef(){
+  if(!_fbDb||!_syncCode)return null;
+  const safeCode = _syncCode.replace(/[.#$[\]]/g,'_');
+  return _fbDb.ref('nb2/'+safeCode);
+}
+
+function loadFromFirebase(){
+  const ref=getFbRef();if(!ref)return;
+  ref.once('value').then(snap=>{
+    const d=snap.val();
+    if(d){
+      if(d.customers){customers=d.customers;sv('nb2_c',customers);}
+      if(d.bills){bills=d.bills;sv('nb2_b',bills);}
+      if(d.smsLog){smsLog=d.smsLog;sv('nb2_s',smsLog);}
+      if(d.company){company=d.company;sv('nb2_co',company);}
+      render();toast('✅ Cloud থেকে ডেটা লোড হয়েছে!');
+    }
+  }).catch(e=>console.log('FB load:',e));
+}
+
+function syncToFirebase(){
+  const ref=getFbRef();if(!ref)return;
+  ref.set({customers,bills,smsLog,company,updatedAt:Date.now()})
+  .catch(e=>console.log('FB sync:',e));
+}
+
+function fbDisconnectBtn(){return '<button class="btn" style="background:rgba(239,68,68,0.1);color:#fca5a5;border:1px solid rgba(239,68,68,0.2);margin-bottom:8px" onclick="disconnectFirebase()">🔌 বিচ্ছিন্ন করুন</button>';}
+function openFirebaseSetup(){
+  const cfg=_fbConfig?JSON.stringify(_fbConfig,null,2):'';
+  const code=_syncCode||'';
+  showSheet(`<div class="sheet-inner">
+    <div class="sheet-title" style="font-size:17px">☁️ Cloud Sync সেটআপ</div>
+    <div style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);border-radius:14px;padding:14px;margin-bottom:14px">
+      <div style="font-size:12px;color:#818cf8;font-weight:800;margin-bottom:8px">📋 মাত্র ৩ ধাপ:</div>
+      <div style="font-size:12px;color:#94a3b8;line-height:2.2">
+        <div><b style="color:#e2e8f0">১.</b> <a href="https://console.firebase.google.com" target="_blank" style="color:#818cf8">console.firebase.google.com</a> → New Project</div>
+        <div><b style="color:#e2e8f0">২.</b> Build → Realtime Database → Create → Test mode</div>
+        <div><b style="color:#e2e8f0">৩.</b> Project Settings → ⚙️ → Add Web App → Config কপি করুন</div>
+      </div>
+    </div>
+    <div class="field-wrap">
+      <label class="inp-label">সিঙ্ক কোড (আপনার ব্যবসার নাম)</label>
+      <input class="inp" id="fb-synccode" placeholder="যেমন: kn24network" value="${code}"/>
+    </div>
+    <div class="field-wrap">
+      <label class="inp-label">Firebase Config (JSON পেস্ট করুন)</label>
+      <textarea class="inp" id="fb-config" rows="7" placeholder='{"apiKey":"...","databaseURL":"https://xxx.firebaseio.com",...}' style="font-size:11px;font-family:monospace">${cfg}</textarea>
+    </div>
+    <button class="btn btn-indigo" style="margin-bottom:8px" onclick="saveFirebaseConfig()">☁️ সংযুক্ত করুন</button>
+    ${_fbConfig?fbDisconnectBtn():''}
+    <button class="btn btn-ghost" onclick="closeSheet()">বাতিল</button>
+  </div>`);
+}
+
+function saveFirebaseConfig(){
+  const code=document.getElementById('fb-synccode').value.trim();
+  const txt=document.getElementById('fb-config').value.trim();
+  if(!code){toast('⚠️ সিঙ্ক কোড দিন!',true);return;}
+  if(!txt){toast('⚠️ Firebase Config দিন!',true);return;}
+  try{
+    const cfg=JSON.parse(txt);
+    if(!cfg.databaseURL){toast('⚠️ databaseURL নেই! Realtime Database চালু করুন',true);return;}
+    _fbConfig=cfg;_syncCode=code;
+    localStorage.setItem('nb2_fbconfig',JSON.stringify(cfg));
+    localStorage.setItem('nb2_synccode',code);
+    _fbApp=null;_fbDb=null;
+    closeSheet();
+    try{initFirebase();}catch(e){}
+    syncToFirebase();
+    toast('✅ Cloud Sync সক্রিয় হয়েছে!');
+  }catch(e){toast('⚠️ Config ভুল! সঠিক JSON দিন',true);}
+}
+
+function disconnectFirebase(){
+  _fbConfig=null;_syncCode='';
+  localStorage.removeItem('nb2_fbconfig');
+  localStorage.removeItem('nb2_synccode');
+  _fbApp=null;_fbDb=null;
+  closeSheet();toast('🔌 Cloud Sync বন্ধ হয়েছে');
+}
 
 function ld(k,fb){try{const d=localStorage.getItem(k);return d?JSON.parse(d):fb}catch{return fb}}
 function sv(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
@@ -756,6 +858,49 @@ function renderDash(){
 // ══════════════════════════════════════════
 //  CUSTOMERS
 // ══════════════════════════════════════════
+function quickSMS(id){
+  const cu=customers.find(x=>x.id===id); if(!cu)return;
+  const cBills=bills.filter(b=>b.customerId===id);
+  const totalDue=cBills.reduce((s,b)=>s+b.due,0);
+  const co=company||{};
+  const html=`<div class="sheet-inner">
+    <div class="sheet-title">📱 SMS পাঠান — ${cu.name}</div>
+    <div style="display:grid;gap:10px">
+      ${totalDue>0?`<button class="btn" style="padding:13px;text-align:left;background:rgba(251,146,60,0.1);border:1px solid rgba(251,146,60,0.3);color:#fdba74" onclick="sendQuickMsg(${id},'due')">
+        ⚠️ বকেয়া বিলের SMS<br><span style="font-size:11px;color:#94a3b8;font-weight:400">বকেয়া: ৳${fmt(totalDue)}</span>
+      </button>`:''}
+      <button class="btn" style="padding:13px;text-align:left;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);color:#6ee7b7" onclick="sendQuickMsg(${id},'welcome')">
+        🎉 স্বাগত বার্তা
+      </button>
+      <button class="btn" style="padding:13px;text-align:left;background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.3);color:#a5b4fc" onclick="sendQuickMsg(${id},'reconnect')">
+        ✅ সংযোগ চালু SMS
+      </button>
+      <button class="btn" style="padding:13px;text-align:left;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#fca5a5" onclick="sendQuickMsg(${id},'disconnect')">
+        🔴 সংযোগ বিচ্ছিন্ন SMS
+      </button>
+      <button class="btn btn-ghost" onclick="closeSheet()">বাতিল</button>
+    </div>
+  </div>`;
+  showSheet(html);
+}
+
+function sendQuickMsg(id,type){
+  const cu=customers.find(x=>x.id===id); if(!cu)return;
+  const co=company||{};
+  const cBills=bills.filter(b=>b.customerId===id);
+  const totalDue=cBills.reduce((s,b)=>s+b.due,0);
+  let msg='';
+  if(type==='due') msg=`সম্মানিত ${cu.name}, আপনার মোট বকেয়া বিল ৳${fmt(totalDue)} টাকা। দ্রুত পরিশোধ করুন। - ${co.name||'NetBill'} (${co.phone||''})`;
+  else if(type==='welcome') msg=`সম্মানিত ${cu.name}, আপনাকে স্বাগতম! 🎉 আমাদের সেবা গ্রহণের জন্য ধন্যবাদ। - ${co.name||'NetBill'} (${co.phone||''})`;
+  else if(type==='reconnect') msg=`সম্মানিত ${cu.name}, আপনার সংযোগটি পুনরায় চালু করা হয়েছে ✅। - ${co.name||'NetBill'} (${co.phone||''})`;
+  else if(type==='disconnect') msg=`সম্মানিত ${cu.name}, আপনার সংযোগটি বকেয়ার কারণে বন্ধ করা হয়েছে 🔴। - ${co.name||'NetBill'} (${co.phone||''})`;
+  
+  const log={id:Date.now(),type,phone:cu.phone,name:cu.name,from:'manual',fromName:'',msg,time:new Date().toISOString()};
+  smsLog.unshift(log);
+  sv('nb2_s',JSON.stringify(smsLog));
+  closeSheet();
+  showSMSSuccess(log);
+}
 function renderCustomers(){
   const active=customers.filter(c=>c.status==='active').length;
   const sorted=[...customers].sort((a,b)=>(b.due||0)-(a.due||0));
@@ -818,6 +963,7 @@ function customerFolderCard(c){
     <!-- অ্যাকশন বাটন -->
     <div style="display:flex;gap:8px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.04);flex-wrap:wrap">
       <a href="tel:${c.phone}" style="flex:1;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.22);color:#22c55e;border-radius:10px;padding:9px;font-size:13px;font-weight:700;text-align:center;text-decoration:none;font-family:inherit">📞 কল</a>
+      <button onclick="event.stopPropagation();quickSMS(${c.id})" style="flex:1;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);color:#6ee7b7;border-radius:10px;padding:9px;cursor:pointer;font-size:13px;font-weight:700;font-family:inherit">📱 SMS</button>
       <button onclick="openEdit(${c.id})" style="flex:1;background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2);color:#818cf8;border-radius:10px;padding:9px;cursor:pointer;font-size:13px;font-weight:700;font-family:inherit">✏️ এডিট</button>
       <button onclick="toggleConnection(${c.id})" style="flex:1;background:${isActive?'rgba(239,68,68,0.1)':'rgba(34,197,94,0.1)'};border:1px solid ${isActive?'rgba(239,68,68,0.22)':'rgba(34,197,94,0.22)'};color:${isActive?'#f87171':'#22c55e'};border-radius:10px;padding:9px;cursor:pointer;font-size:13px;font-weight:700;font-family:inherit">${isActive?'🔴 বন্ধ':'🟢 চালু'}</button>
       ${unpaid.length>0?`<button onclick="openPayModal(${unpaid[0].id})" style="flex:1;background:linear-gradient(135deg,#166534,#16a34a);border:none;color:#fff;border-radius:10px;padding:9px;cursor:pointer;font-size:13px;font-weight:800;font-family:inherit">💳 পে</button>`:''}
@@ -991,6 +1137,7 @@ function openBillHistory(id){
           <div style="font-size:12px;color:#a78bfa;margin-top:2px">📦 ${p.name}</div>
           <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
             <a href="tel:${c.phone}" style="background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.25);color:#22c55e;border-radius:8px;padding:5px 12px;font-size:12px;font-weight:700;text-decoration:none">📞 কল</a>
+            <button onclick="quickSMS(${c.id})" style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);color:#6ee7b7;border-radius:8px;padding:5px 12px;cursor:pointer;font-size:12px;font-weight:700;font-family:inherit">📱 SMS</button>
             <button onclick="openEdit(${c.id})" style="background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2);color:#818cf8;border-radius:8px;padding:5px 12px;cursor:pointer;font-size:12px;font-weight:700;font-family:inherit">✏️ এডিট</button>
             <span style="background:${isActive?'rgba(34,197,94,0.1)':'rgba(239,68,68,0.1)'};border:1px solid ${isActive?'rgba(34,197,94,0.25)':'rgba(239,68,68,0.25)'};color:${isActive?'#22c55e':'#f87171'};border-radius:8px;padding:5px 10px;font-size:11px;font-weight:800">${isActive?'🟢 চালু':'🔴 বন্ধ'}</span>
           </div>
@@ -1483,10 +1630,29 @@ function renderSMS(){
 // ══════════════════════════════════════════
 //  SETTINGS
 // ══════════════════════════════════════════
+function renderCloudCard(){
+  const connected = _fbConfig && _syncCode;
+  return '<div style="background:linear-gradient(145deg,#080b1e,#0a0d20);border:1px solid rgba(99,102,241,0.25);border-radius:18px;padding:18px;margin-bottom:12px">'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">'
+    +'<div style="display:flex;align-items:center;gap:10px">'
+    +'<div style="width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#4f46e5,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:22px">☁️</div>'
+    +'<div><div style="font-weight:800;font-size:15px;color:#f1f5f9">Cloud Sync</div>'
+    +'<div style="font-size:11px;margin-top:2px">'+(connected?'<span style="color:#22c55e">✅ সংযুক্ত: '+_syncCode+'</span>':'<span style="color:#64748b">সংযুক্ত নয়</span>')+'</div>'
+    +'</div></div>'
+    +'<button style="border:none;border-radius:10px;padding:9px 14px;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit" onclick="openFirebaseSetup()">'+(connected?'⚙️ সেটিংস':'🔌 সেটআপ')+'</button>'
+    +'</div>'
+    +'<div style="font-size:11.5px;color:#475569;line-height:1.8">'+(connected?'সব ডিভাইসে ডেটা সিঙ্ক হচ্ছে ✨':'সেটআপ করলে সব ডিভাইসে একই ডেটা থাকবে')+'</div>'
+    +(connected?'<button style="border:none;border-radius:9px;padding:7px 14px;background:rgba(34,197,94,0.1);color:#6ee7b7;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:10px" onclick="loadFromFirebase()">🔄 এখনই সিঙ্ক করুন</button>':'')
+    +'</div>';
+}
+
 function renderSettings(){
   const adminPin   = getAdminPin();
   const cashierPin = getCashierPin();
   return `<div>
+
+    <!-- Cloud Sync কার্ড -->
+    ${renderCloudCard()}
 
     <!-- PIN সেটিংস কার্ড -->
     <div style="background:linear-gradient(145deg,#0d0b1e,#0a0818);border:1px solid rgba(99,102,241,0.25);border-radius:18px;padding:18px;margin-bottom:12px">
@@ -2171,6 +2337,49 @@ function whatsappBackup(){
   sv('nb2_lastbackup',ts);
   toast('✅ ফাইল ডাউনলোড হয়েছে! WhatsApp এ পাঠান');
 }
+function googleDriveRestore(){
+  // Show modal with instructions
+  const html=`<div class="sheet-inner">
+    <div class="sheet-title">📂 Google Drive থেকে রিস্টোর</div>
+    <div style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);border-radius:13px;padding:14px;margin-bottom:16px">
+      <div style="font-size:13px;color:#94a3b8;line-height:2">
+        <div style="margin-bottom:8px"><strong style="color:#e2e8f0">ধাপ ১:</strong> নিচের বাটনে চাপুন → Google Drive খুলবে</div>
+        <div style="margin-bottom:8px"><strong style="color:#e2e8f0">ধাপ ২:</strong> <strong style="color:#818cf8">NetBill_</strong> দিয়ে শুরু ফাইলটা খুঁজুন</div>
+        <div style="margin-bottom:8px"><strong style="color:#e2e8f0">ধাপ ৩:</strong> ফাইলটা ডাউনলোড করুন</div>
+        <div><strong style="color:#e2e8f0">ধাপ ৪:</strong> নিচে "রিস্টোর করুন" বাটন চাপুন</div>
+      </div>
+    </div>
+    <button class="btn" style="width:100%;padding:13px;font-size:14px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);margin-bottom:10px" onclick="window.open('https://drive.google.com/drive/search?q=NetBill','_blank')">
+      📂 Google Drive খুলুন
+    </button>
+    <button class="btn" style="width:100%;padding:13px;font-size:14px;background:linear-gradient(135deg,#7c3aed,#a78bfa)" onclick="closeSheet();restoreFromFile()">
+      ⬆️ রিস্টোর করুন
+    </button>
+    <button class="btn btn-ghost" style="width:100%;margin-top:8px" onclick="closeSheet()">বাতিল</button>
+  </div>`;
+  openSheet(html);
+}
+
+function googleDriveBackup(){
+  const data={customers,bills,smsLog,company,backupTime:new Date().toISOString()};
+  const json=JSON.stringify(data);
+  const date=new Date().toLocaleDateString('en-GB').replace(/\//g,'-');
+  
+  // Download file first
+  const blob=new Blob([json],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download='NetBill_'+date+'.json';
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+  
+  // Open Google Drive upload
+  setTimeout(()=>{
+    window.open('https://drive.google.com/drive/my-drive','_blank');
+    toast('✅ ফাইল ডাউনলোড হয়েছে! Drive এ আপলোড করুন');
+  }, 1000);
+}
+
 function downloadBackup(){
   const data={customers,bills,smsLog,company,backupTime:new Date().toISOString()};
   const json=JSON.stringify(data,null,2);
@@ -2353,8 +2562,14 @@ function renderGDriveSettings(){
         <button class="btn" style="padding:11px;font-size:13px;background:linear-gradient(135deg,#0369a1,#0ea5e9)" onclick="downloadBackup()">⬇️ ডাউনলোড</button>
         <button class="btn" style="padding:11px;font-size:13px;background:rgba(167,139,250,0.2);border:1px solid rgba(167,139,250,0.3);color:#c4b5fd" onclick="restoreFromFile()">⬆️ রিস্টোর</button>
       </div>
-      <button class="btn" style="width:100%;padding:13px;font-size:14px;background:linear-gradient(135deg,#15803d,#22c55e);display:flex;align-items:center;justify-content:center;gap:8px" onclick="whatsappBackup()">
+      <button class="btn" style="width:100%;padding:13px;font-size:14px;background:linear-gradient(135deg,#15803d,#22c55e);display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px" onclick="whatsappBackup()">
         <span style="font-size:20px">💚</span> WhatsApp এ ব্যাকআপ পাঠান
+      </button>
+      <button class="btn" style="width:100%;padding:13px;font-size:14px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px" onclick="googleDriveBackup()">
+        <span style="font-size:20px">📂</span> Google Drive এ সেভ করুন
+      </button>
+      <button class="btn" style="width:100%;padding:13px;font-size:14px;background:linear-gradient(135deg,#7c3aed,#a78bfa);display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px" onclick="googleDriveRestore()">
+        <span style="font-size:20px">📥</span> Google Drive থেকে রিস্টোর
       </button>
       <button class="btn btn-ghost" style="font-size:12px;padding:10px" onclick="disconnectGas()">🔌 সংযোগ বিচ্ছিন্ন করুন</button>
     </div>`;
@@ -2399,8 +2614,14 @@ function renderGDriveSettings(){
       <button class="btn" style="padding:11px;font-size:13px;background:linear-gradient(135deg,#0369a1,#0ea5e9)" onclick="downloadBackup()">⬇️ ডাউনলোড</button>
       <button class="btn" style="padding:11px;font-size:13px;background:rgba(167,139,250,0.2);border:1px solid rgba(167,139,250,0.3);color:#c4b5fd" onclick="restoreFromFile()">⬆️ রিস্টোর</button>
     </div>
-    <button class="btn" style="width:100%;padding:13px;font-size:14px;background:linear-gradient(135deg,#15803d,#22c55e);display:flex;align-items:center;justify-content:center;gap:8px" onclick="whatsappBackup()">
+    <button class="btn" style="width:100%;padding:13px;font-size:14px;background:linear-gradient(135deg,#15803d,#22c55e);display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px" onclick="whatsappBackup()">
       <span style="font-size:20px">💚</span> WhatsApp এ ব্যাকআপ পাঠান
+    </button>
+    <button class="btn" style="width:100%;padding:13px;font-size:14px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px" onclick="googleDriveBackup()">
+      <span style="font-size:20px">📂</span> Google Drive এ সেভ করুন
+    </button>
+    <button class="btn" style="width:100%;padding:13px;font-size:14px;background:linear-gradient(135deg,#7c3aed,#a78bfa);display:flex;align-items:center;justify-content:center;gap:8px" onclick="googleDriveRestore()">
+      <span style="font-size:20px">📥</span> Google Drive থেকে রিস্টোর
     </button>
   </div>`;
 }
@@ -2411,6 +2632,8 @@ if(getGasUrl()) setTimeout(doBackup, 4000);
 //  PWA INSTALL PROMPT
 // ══════════════════════════════════════════
 let _installPrompt = null;
+
+try{initFirebase();}catch(e){}
 
 window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();
