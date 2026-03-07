@@ -2147,6 +2147,30 @@ function getGasUrl(){ return ld('nb2_gasurl',''); }
 // ══════════════════════════════════════════
 //  লোকাল ব্যাকআপ — ফাইল ডাউনলোড / রিস্টোর
 // ══════════════════════════════════════════
+
+function whatsappBackup(){
+  const data={customers,bills,smsLog,company,backupTime:new Date().toISOString()};
+  const json=JSON.stringify(data);
+  const date=new Date().toLocaleDateString('en-GB').replace(/\//g,'-');
+  const msg=`NetBill ব্যাকআপ ${date}%0A%0Aগ্রাহক: ${customers.length} জন%0Aবিল: ${bills.length} টি%0A%0Aনিচের ফাইলটি সেভ রাখুন 👇`;
+  
+  // First download the file
+  const blob=new Blob([json],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=`NetBill_${date}.json`;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+  
+  // Then open WhatsApp
+  setTimeout(()=>{
+    window.open(`https://wa.me/?text=${msg}`,'_blank');
+  }, 1000);
+  
+  const ts=new Date().toLocaleString('bn-BD');
+  sv('nb2_lastbackup',ts);
+  toast('✅ ফাইল ডাউনলোড হয়েছে! WhatsApp এ পাঠান');
+}
 function downloadBackup(){
   const data={customers,bills,smsLog,company,backupTime:new Date().toISOString()};
   const json=JSON.stringify(data,null,2);
@@ -2325,10 +2349,13 @@ function renderGDriveSettings(){
       </div>
       <div style="height:1px;background:rgba(255,255,255,0.06);margin:14px 0"></div>
       <div style="font-size:11px;color:#475569;font-weight:700;margin-bottom:10px">📱 লোকাল ব্যাকআপ (ইন্টারনেট ছাড়া)</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px">
         <button class="btn" style="padding:11px;font-size:13px;background:linear-gradient(135deg,#0369a1,#0ea5e9)" onclick="downloadBackup()">⬇️ ডাউনলোড</button>
         <button class="btn" style="padding:11px;font-size:13px;background:rgba(167,139,250,0.2);border:1px solid rgba(167,139,250,0.3);color:#c4b5fd" onclick="restoreFromFile()">⬆️ রিস্টোর</button>
       </div>
+      <button class="btn" style="width:100%;padding:13px;font-size:14px;background:linear-gradient(135deg,#15803d,#22c55e);display:flex;align-items:center;justify-content:center;gap:8px" onclick="whatsappBackup()">
+        <span style="font-size:20px">💚</span> WhatsApp এ ব্যাকআপ পাঠান
+      </button>
       <button class="btn btn-ghost" style="font-size:12px;padding:10px" onclick="disconnectGas()">🔌 সংযোগ বিচ্ছিন্ন করুন</button>
     </div>`;
   }
